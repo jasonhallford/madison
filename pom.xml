@@ -11,6 +11,7 @@
     <modules>
         <module>catalog</module>
         <module>db-manager</module>
+        <module>common</module>
     </modules>
 
     <properties>
@@ -29,6 +30,8 @@
         <apache-commons.codec.version>1.15</apache-commons.codec.version>
         <logback.version>1.4.5</logback.version>
         <postgresql.driver.version>42.5.1</postgresql.driver.version>
+        <junit.version>5.9.1</junit.version>
+        <assertj.version>3.23.1</assertj.version>
     </properties>
 
     <dependencyManagement>
@@ -103,7 +106,26 @@
                 <artifactId>postgresql</artifactId>
                 <version>${postgresql.driver.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.jetbrains</groupId>
+                <artifactId>annotations</artifactId>
+                <version>RELEASE</version>
+                <scope>compile</scope>
+            </dependency>
 
+            <!-- Test Dependencies -->
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter</artifactId>
+                <version>${junit.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.assertj</groupId>
+                <artifactId>assertj-core</artifactId>
+                <version>${assertj.version}</version>
+                <scope>test</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
