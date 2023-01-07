@@ -4,14 +4,16 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>io.miscellanea</groupId>
-    <artifactId>madison</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <groupId>io.miscellanea.madison</groupId>
+    <artifactId>parent</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
+
     <modules>
-        <module>catalog</module>
-        <module>db-manager</module>
+        <module>catalog-api</module>
+        <module>schema-migration-service</module>
         <module>common</module>
+        <module>import-service</module>
     </modules>
 
     <properties>
@@ -32,6 +34,7 @@
         <postgresql.driver.version>42.5.1</postgresql.driver.version>
         <junit.version>5.9.1</junit.version>
         <assertj.version>3.23.1</assertj.version>
+        <jackson.version>2.14.0</jackson.version>
     </properties>
 
     <dependencyManagement>
@@ -111,6 +114,11 @@
                 <artifactId>annotations</artifactId>
                 <version>RELEASE</version>
                 <scope>compile</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>${jackson.version}</version>
             </dependency>
 
             <!-- Test Dependencies -->

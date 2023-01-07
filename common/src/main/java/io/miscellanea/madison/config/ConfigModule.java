@@ -1,27 +1,46 @@
-package io.miscellanea.madison.dbmanager;
+package io.miscellanea.madison.config;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import org.apache.commons.configuration2.CompositeConfiguration;
 import org.apache.commons.configuration2.EnvironmentConfiguration;
 import org.apache.commons.configuration2.PropertiesConfiguration;
+import org.apache.commons.configuration2.SystemConfiguration;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.configuration2.io.FileHandler;
+import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Singleton;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-public class ConfigurationModule extends AbstractModule {
+public abstract class ConfigModule<T> extends AbstractModule {
+    private static final Logger logger = LoggerFactory.getLogger(ConfigModule.class);
+
+    private final String propertiesFileName;
+
+    // Constructor to set ConfigObjectProducer
+    public ConfigModule(@NotNull String propertiesFileName) {
+        this.propertiesFileName = propertiesFileName;
+    }
+
+    protected abstract T produceConfiguration(CompositeConfiguration compositeConfiguration);
+
     @Provides
     @Singleton
-    static Configuration provideConfiguration() throws ConfigurationException {
+    public T provideConfiguration() throws ConfigurationException {
+        // Read the JVM system properties
+        SystemConfiguration systemConfiguration = new SystemConfiguration();
+
         // Read configuration from the environment. These values have the highest priority
         EnvironmentConfiguration envConfig = new EnvironmentConfiguration();
 
         // Read configuration from the classpath. Values set here have the lowest priority.
         PropertiesConfiguration classpathConfig = new PropertiesConfiguration();
-        try (var input = ConfigurationModule.class.getResourceAsStream("/config/db-manager.properties")) {
+        logger.debug("Loading classpath configuration properties from {}.", this.propertiesFileName);
+        try (var input = this.getClass().getResourceAsStream(this.propertiesFileName)) {
             if (input != null) {
                 try (var reader = new InputStreamReader(input)) {
                     FileHandler handler = new FileHandler(classpathConfig);
@@ -35,13 +54,11 @@ public class ConfigurationModule extends AbstractModule {
         }
 
         // Build a composite configuration to read layered configuration properties
-        CompositeConfiguration compConfig = new CompositeConfiguration();
-        compConfig.addConfiguration(envConfig);
-        compConfig.addConfiguration(classpathConfig);
+        CompositeConfiguration compositeConfiguration = new CompositeConfiguration();
+        compositeConfiguration.addConfiguration(systemConfiguration);
+        compositeConfiguration.addConfiguration(envConfig);
+        compositeConfiguration.addConfiguration(classpathConfig);
 
-        Configuration config = new Configuration(compConfig.getString("db.host"), compConfig.getInt("db.port"), compConfig.getString("db.user"),
-                compConfig.getString("db.password"), compConfig.getString("db.name"));
-
-        return config;
+        return this.produceConfiguration(compositeConfiguration);
     }
 }

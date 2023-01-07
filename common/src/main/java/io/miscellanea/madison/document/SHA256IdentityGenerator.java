@@ -3,8 +3,7 @@ package io.miscellanea.madison.document;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URL;
 
 /**
@@ -32,11 +31,27 @@ public class SHA256IdentityGenerator implements IdentityGenerator {
 
     @Override
     public String fromBytes(byte[] bytes) {
-        if(bytes == null){
+        if (bytes == null) {
             throw new IllegalArgumentException("bytes must not be null.");
         }
 
         String id = DigestUtils.sha256Hex(bytes);
+
+        return id;
+    }
+
+    @Override
+    public String fromFile(File file) throws DocumentException {
+        if (file == null) {
+            throw new IllegalArgumentException("file must not be null.");
+        }
+
+        String id;
+        try (BufferedInputStream in = new BufferedInputStream(new FileInputStream(file))) {
+            id = DigestUtils.sha256Hex(in);
+        } catch (Exception e) {
+            throw new DocumentException("Unable to generate ID from file '" + file.getAbsolutePath() + "'.", e);
+        }
 
         return id;
     }
