@@ -1,7 +1,7 @@
 package io.miscellanea.madison.catalog;
 
 import io.miscellanea.madison.catalog.config.ApiConfig;
-import io.miscellanea.madison.catalog.config.BrokerConfig;
+import io.miscellanea.madison.config.BrokerConfig;
 import io.miscellanea.madison.catalog.config.RestConfig;
 import io.vertx.core.json.JsonObject;
 import org.junit.jupiter.api.DisplayName;

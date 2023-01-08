@@ -8,11 +8,11 @@ import java.nio.charset.StandardCharsets;
 
 import static org.assertj.core.api.Assertions.*;
 
-class SHA256IdentityGeneratorTest {
+class SHA256FingerprintTest {
     @Test
     @DisplayName("A null URL throws an IllegalArgumentException")
     void nullUrlThrowsException() {
-        var gen = new SHA256IdentityGenerator();
+        var gen = new SHA256Fingerprint();
 
         assertThatThrownBy(() -> gen.fromUrl(null)).isInstanceOf(IllegalArgumentException.class);
     }
@@ -20,7 +20,7 @@ class SHA256IdentityGeneratorTest {
     @Test
     @DisplayName("A null byte array throws an IllegalArgumentException")
     void nullBytesThrowsException() {
-        var gen = new SHA256IdentityGenerator();
+        var gen = new SHA256Fingerprint();
 
         assertThatThrownBy(() -> gen.fromBytes(null)).isInstanceOf(IllegalArgumentException.class);
     }
@@ -28,7 +28,7 @@ class SHA256IdentityGeneratorTest {
     @Test
     @DisplayName("UTF-8 bytes return SHA256 hash ID")
     void identityFromBytes() {
-        var gen = new SHA256IdentityGenerator();
+        var gen = new SHA256Fingerprint();
 
         var id = gen.fromBytes("This is my test byte array".getBytes(StandardCharsets.UTF_8));
         assertThat(id).isNotBlank().isEqualToIgnoringCase("64b461d25d08f69c2de3cb34907357286ecb2b41c49c48993b1534ccaf33ec00");
@@ -37,7 +37,7 @@ class SHA256IdentityGeneratorTest {
     @Test
     @DisplayName("File URL returns SHA256 hash ID")
     void identityFromFile() {
-        var gen = new SHA256IdentityGenerator();
+        var gen = new SHA256Fingerprint();
 
         URL url = this.getClass().getResource("/id-test-file.txt");
         assertThat(url).isNotNull();

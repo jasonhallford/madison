@@ -35,6 +35,7 @@
         <junit.version>5.9.1</junit.version>
         <assertj.version>3.23.1</assertj.version>
         <jackson.version>2.14.0</jackson.version>
+        <resteasy-client.version>6.2.2.Final</resteasy-client.version>
     </properties>
 
     <dependencyManagement>
@@ -52,6 +53,16 @@
             <dependency>
                 <groupId>org.jooq</groupId>
                 <artifactId>jooq</artifactId>
+                <version>${jooq.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jooq</groupId>
+                <artifactId>jooq-meta</artifactId>
+                <version>${jooq.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jooq</groupId>
+                <artifactId>jooq-codegen</artifactId>
                 <version>${jooq.version}</version>
             </dependency>
             <dependency>
@@ -78,11 +89,6 @@
                 <groupId>io.vertx</groupId>
                 <artifactId>vertx-rabbitmq-client</artifactId>
                 <version>${vertx.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.minio</groupId>
-                <artifactId>minio</artifactId>
-                <version>${minio.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.flywaydb</groupId>
@@ -120,6 +126,12 @@
                 <artifactId>jackson-databind</artifactId>
                 <version>${jackson.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.jboss.resteasy</groupId>
+                <artifactId>resteasy-client</artifactId>
+                <version>${resteasy-client.version}</version>
+            </dependency>
+
 
             <!-- Test Dependencies -->
             <dependency>

@@ -1,5 +1,7 @@
 package io.miscellanea.madison.event;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 public class Event {
     // Enum of known types
     public enum Type {
@@ -7,8 +9,11 @@ public class Event {
     }
 
     // Fields
+    private static final AtomicLong idCounter = new AtomicLong(0);
+
     private final Type type;
     private final String payload;
+    private final long id;
 
     // Constructors
     public Event(Type type) {
@@ -16,6 +21,7 @@ public class Event {
     }
 
     public Event(Type type, String payload) {
+        this.id = Event.idCounter.incrementAndGet();
         this.type = type;
         this.payload = payload == null ? "" : payload;
     }
@@ -25,7 +31,11 @@ public class Event {
         return this.type;
     }
 
-    public String payload() {
+    public String getPayload() {
         return this.payload;
+    }
+
+    public long getId() {
+        return this.id;
     }
 }

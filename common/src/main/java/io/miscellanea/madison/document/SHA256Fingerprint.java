@@ -10,7 +10,7 @@ import java.net.URL;
  * Generates a unique document identity as a string-encoded SHA256
  * hash of the source's bytes.
  */
-public class SHA256IdentityGenerator implements IdentityGenerator {
+public class SHA256Fingerprint implements Fingerprint {
     @Override
     public String fromUrl(@NotNull URL url) throws DocumentException {
         if (url == null) {
