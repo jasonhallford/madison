@@ -15,7 +15,7 @@ class ApiConfigTest {
     void serializableToJson() {
 
         var config = new ApiConfig( new RestConfig(8080,"/var/lib/madison/import"),
-                new BrokerConfig("localhost",5672,"",""));
+                new BrokerConfig("localhost",5672,"","",2));
 
         var json = JsonObject.mapFrom(config);
         assertThat(json).isNotNull();
