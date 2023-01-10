@@ -1,4 +1,4 @@
-package io.miscellanea.madison.dbmanager;
+package io.miscellanea.madison.schema;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -8,8 +8,8 @@ import org.flywaydb.core.Flyway;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SchemaMigrationService {
-    private static final Logger logger = LoggerFactory.getLogger(SchemaMigrationService.class);
+public class SchemaMigrationTool {
+    private static final Logger logger = LoggerFactory.getLogger(SchemaMigrationTool.class);
 
     public static void main(String[] args) {
         // Create the Guice injector to initialize our dependencies.
