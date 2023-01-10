@@ -15,7 +15,8 @@ public class ServiceConfigModule extends ConfigModule<ServiceConfig> {
                 configuration.getInt("broker.port"), configuration.getString("broker.user"),
                 configuration.getString("broker.password"), configuration.getInt("broker.qos"));
 
-        return new ServiceConfig(configuration.getString("import.service.dir"),
-                configuration.getInt("import.service.task-pool-size"),brokerConfig);
+        return new ServiceConfig(configuration.getString("import.service.import.dir"),
+                configuration.getString("import.service.content.dir"),
+                configuration.getInt("import.service.task-pool-size"), brokerConfig);
     }
 }

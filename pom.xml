@@ -11,9 +11,10 @@
 
     <modules>
         <module>catalog-api</module>
-        <module>schema-migration-service</module>
+        <module>schema-migration-tool</module>
         <module>common</module>
         <module>import-service</module>
+        <module>data-access</module>
     </modules>
 
     <properties>
@@ -36,6 +37,8 @@
         <assertj.version>3.23.1</assertj.version>
         <jackson.version>2.14.0</jackson.version>
         <resteasy-client.version>6.2.2.Final</resteasy-client.version>
+        <hikaricp.version>5.0.1</hikaricp.version>
+        <jetbrains.annotations.version>23.1.0</jetbrains.annotations.version>
     </properties>
 
     <dependencyManagement>
@@ -43,6 +46,11 @@
             <dependency>
                 <groupId>com.google.inject</groupId>
                 <artifactId>guice</artifactId>
+                <version>${guice.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.inject.extensions</groupId>
+                <artifactId>guice-throwingproviders</artifactId>
                 <version>${guice.version}</version>
             </dependency>
             <dependency>
@@ -64,6 +72,11 @@
                 <groupId>org.jooq</groupId>
                 <artifactId>jooq-codegen</artifactId>
                 <version>${jooq.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.zaxxer</groupId>
+                <artifactId>HikariCP</artifactId>
+                <version>${hikaricp.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.vertx</groupId>
@@ -116,12 +129,6 @@
                 <version>${postgresql.driver.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.jetbrains</groupId>
-                <artifactId>annotations</artifactId>
-                <version>RELEASE</version>
-                <scope>compile</scope>
-            </dependency>
-            <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-databind</artifactId>
                 <version>${jackson.version}</version>
@@ -131,7 +138,11 @@
                 <artifactId>resteasy-client</artifactId>
                 <version>${resteasy-client.version}</version>
             </dependency>
-
+            <dependency>
+                <groupId>org.jetbrains</groupId>
+                <artifactId>annotations</artifactId>
+                <version>${jetbrains.annotations.version}</version>
+            </dependency>
 
             <!-- Test Dependencies -->
             <dependency>

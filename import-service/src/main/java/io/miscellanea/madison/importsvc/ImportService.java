@@ -2,15 +2,25 @@ package io.miscellanea.madison.importsvc;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import io.miscellanea.madison.event.Event;
-import io.miscellanea.madison.event.EventService;
+import io.miscellanea.madison.entity.Document;
+import io.miscellanea.madison.entity.Event;
+import io.miscellanea.madison.importsvc.task.ImportDocument;
+import io.miscellanea.madison.service.EventService;
 import io.miscellanea.madison.importsvc.config.ServiceConfig;
 import io.miscellanea.madison.importsvc.config.ServiceConfigModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.Path;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ImportService {
     // Fields
@@ -35,10 +45,10 @@ public class ImportService {
         EventService eventService = injector.getInstance(EventService.class);
 
         // Register a handler for the IMPORT_ALL event. This
-        eventService.registerHandler((event) -> {
-            var disposition = processImportAllEvent(eventService, event);
-            eventService.handled(event, disposition);
-        }, Event.Type.IMPORT_ALL);
+        eventService.registerHandler((event) -> processImportScanEvent(config, eventService, event),
+                Event.Type.IMPORT_SCAN);
+        eventService.registerHandler((event) -> processImportDocumentEvent(injector, config, eventService, event),
+                Event.Type.IMPORT_DOCUMENT);
         eventService.accept();
 
         // Register a shutdown handler to terminate the event service and any running
@@ -59,9 +69,53 @@ public class ImportService {
         logger.info("Madison Import Service online and listening for events.");
     }
 
-    private static EventService.Disposition processImportAllEvent(EventService eventService, Event event) {
-        logger.debug("Processing IMPORT_ALL event.");
+    private static void processImportScanEvent(ServiceConfig serviceConfig,
+                                               EventService eventService, Event event) {
+        logger.debug("Processing IMPORT_SCAN event.");
 
-        return EventService.Disposition.FAILURE_IGNORE;
+        // Walk the import directory and generate an IMPORT event for every entry.
+        try (Stream<Path> files = Files.list(Paths.get(serviceConfig.importDir()))) {
+            Set<Path> docsToImport = files.filter(file -> !Files.isDirectory(file)).collect(Collectors.toSet());
+
+            for (Path file : docsToImport) {
+                String url = file.toUri().toString();
+                var importEvent = new Event(Event.Type.IMPORT_DOCUMENT, url);
+                eventService.publish(importEvent);
+                logger.debug("Published event to import file at '{}'.", url);
+            }
+
+            logger.debug("Finished processing IMPORT_SCAN event.");
+            eventService.accepted(event, EventService.Disposition.SUCCESS);
+        } catch (Exception e) {
+            logger.error("Unable to process IMPORT_SCAN event! This request will be ignored.", e);
+            eventService.accepted(event, EventService.Disposition.FAILURE_IGNORE);
+        }
+    }
+
+    private static void processImportDocumentEvent(Injector injector, ServiceConfig serviceConfig,
+                                                   EventService eventService, Event event) {
+        logger.debug("Processing IMPORT event.");
+
+        try {
+            String payload = event.getPayload();
+            URL docUrl = new URL(payload);
+
+            var importer = injector.getInstance(ImportDocument.class);
+            importer.setDocumentUrl(docUrl);
+
+            CompletableFuture<Document> future = CompletableFuture.supplyAsync(importer, executorService);
+            future.whenComplete((document, ex) -> {
+                if (ex == null) {
+                    logger.debug("Successfully imported document into content store.");
+                    eventService.accepted(event, EventService.Disposition.SUCCESS);
+                } else {
+                    logger.error("Unable to import document into content store.", ex);
+                    eventService.accepted(event, EventService.Disposition.FAILURE_IGNORE);
+                }
+            });
+        } catch (Exception e) {
+            logger.error("IMPORT event contains an invalid URL.", e);
+            eventService.accepted(event, EventService.Disposition.FAILURE_IGNORE);
+        }
     }
 }

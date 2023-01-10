@@ -2,7 +2,7 @@ package io.miscellanea.madison.importsvc;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.miscellanea.madison.event.Event;
+import io.miscellanea.madison.entity.Event;
 
 public class RabbitMQEvent extends Event {
     // Fields

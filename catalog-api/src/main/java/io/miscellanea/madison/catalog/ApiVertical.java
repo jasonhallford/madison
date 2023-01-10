@@ -1,7 +1,7 @@
 package io.miscellanea.madison.catalog;
 
 import io.miscellanea.madison.catalog.config.ApiConfig;
-import io.miscellanea.madison.event.Event;
+import io.miscellanea.madison.entity.Event;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
@@ -82,7 +82,7 @@ public class ApiVertical extends AbstractVerticle {
         router.route().handler(BodyHandler.create(this.config.restConfig().uploadDirectory()));
 
         // Bind import endpoints
-        router.get("/api/import/notify").handler(this::notifyImportService);
+        router.get("/api/import/scan").handler(this::requestImportScan);
 
         // Create the default handler (which will return a bad request code).
         router.route().handler(ctx -> {
@@ -92,10 +92,10 @@ public class ApiVertical extends AbstractVerticle {
         });
     }
 
-    private void notifyImportService(RoutingContext ctx) {
+    private void requestImportScan(RoutingContext ctx) {
         logger.debug("Handling request to notify import service.");
 
-        Event event = new Event(Event.Type.IMPORT_ALL);
+        Event event = new Event(Event.Type.IMPORT_SCAN);
         JsonObject json = JsonObject.mapFrom(event);
 
         Buffer msg = Buffer.buffer(json.toString(),"UTF-8");
