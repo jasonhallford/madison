@@ -13,8 +13,9 @@
         <module>catalog-api</module>
         <module>schema-migration-tool</module>
         <module>common</module>
-        <module>import-service</module>
+        <module>import-server</module>
         <module>data-access</module>
+        <module>redis-broker</module>
     </modules>
 
     <properties>
@@ -39,6 +40,8 @@
         <resteasy-client.version>6.2.2.Final</resteasy-client.version>
         <hikaricp.version>5.0.1</hikaricp.version>
         <jetbrains.annotations.version>23.1.0</jetbrains.annotations.version>
+        <jedis.version>4.3.1</jedis.version>
+        <pdfbox.version>2.0.27</pdfbox.version>
     </properties>
 
     <dependencyManagement>
@@ -54,9 +57,9 @@
                 <version>${guice.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.rabbitmq</groupId>
-                <artifactId>amqp-client</artifactId>
-                <version>${rabbitmq.version}</version>
+                <groupId>redis.clients</groupId>
+                <artifactId>jedis</artifactId>
+                <version>${jedis.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.jooq</groupId>
@@ -99,11 +102,6 @@
                 <version>${vertx.version}</version>
             </dependency>
             <dependency>
-                <groupId>io.vertx</groupId>
-                <artifactId>vertx-rabbitmq-client</artifactId>
-                <version>${vertx.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.flywaydb</groupId>
                 <artifactId>flyway-core</artifactId>
                 <version>${flyway.version}</version>
@@ -139,10 +137,21 @@
                 <version>${resteasy-client.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.jboss.resteasy</groupId>
+                <artifactId>resteasy-multipart-provider</artifactId>
+                <version>${resteasy-client.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.jetbrains</groupId>
                 <artifactId>annotations</artifactId>
                 <version>${jetbrains.annotations.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.apache.pdfbox</groupId>
+                <artifactId>pdfbox</artifactId>
+                <version>${pdfbox.version}</version>
+            </dependency>
+
 
             <!-- Test Dependencies -->
             <dependency>

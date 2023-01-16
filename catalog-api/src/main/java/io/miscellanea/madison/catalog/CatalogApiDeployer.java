@@ -2,8 +2,7 @@ package io.miscellanea.madison.catalog;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import io.miscellanea.madison.catalog.config.ApiConfig;
-import io.miscellanea.madison.catalog.config.ApiConfigModule;
+import io.miscellanea.madison.broker.BrokerConfigModule;
 import io.vertx.core.Vertx;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,8 +13,9 @@ public class CatalogApiDeployer {
     public static void main(String[] args) {
         // Create the Guice injector to initialize our dependencies.
         logger.debug("Initializing Guice injector.");
-        Injector injector = Guice.createInjector(new ApiConfigModule());
-        ApiConfig config = injector.getInstance(ApiConfig.class);
+        Injector injector = Guice.createInjector(new BrokerConfigModule(),
+                new CatalogApiConfigModule(),
+                new CatalogApiModule());
         logger.debug("Guice injector successfully initialized.");
 
         // Start the service's REST interface.
