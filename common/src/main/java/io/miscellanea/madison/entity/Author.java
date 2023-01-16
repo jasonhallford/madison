@@ -1,11 +1,22 @@
 package io.miscellanea.madison.entity;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
+import java.util.regex.Pattern;
 
 public class Author {
     // Fields
+    private static final Logger logger = LoggerFactory.getLogger(Author.class);
+
+    private static final Pattern nameAndPattern = Pattern.compile(",*\\s*(and|\\&)\\s*");
+    private static final Pattern nameWhitespacePattern = Pattern.compile(",\\s+");
+
     private String firstName;
     private String middleName;
     private String lastName;
@@ -26,8 +37,33 @@ public class Author {
     }
 
     // Static methods
-    public static Author fromString(String fullName) {
-        return null;
+    public static List<Author> fromString(String fullName) {
+        List<Author> authors = new ArrayList<>();
+
+        // Step 1: Remove 'and' and '&' from multi-author names and replace them with '|'.
+        var compoundNames = nameAndPattern.matcher(fullName).replaceAll("|");
+        logger.debug("compoundNames with 'and' removed = {}", compoundNames);
+
+        // Step 2: Replace all commas followed by whitespace with '|'.
+        compoundNames = nameWhitespacePattern.matcher(compoundNames).replaceAll("|");
+        logger.debug("compoundNames with ', ' removed = {}", compoundNames);
+
+        // Step 2: Split into individual names based on the presence of '|'
+        var splitNames = compoundNames.split("\\|");
+
+        // Step 3: Process each name, breaking it into a series of components.
+        for (String name : splitNames) {
+            logger.debug("Processing name: {}", name);
+
+            var components = name.split(" ");
+            if (components.length == 2) {
+                var author = new Author(components[0].trim(), components[1].trim());
+                authors.add(author);
+                logger.debug("Added new author to list: {}", author);
+            }
+        }
+
+        return authors;
     }
 
     // Properties
@@ -79,6 +115,16 @@ public class Author {
     }
 
     // Methods
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .append("firstName", firstName)
+                .append("middleName", middleName)
+                .append("lastName", lastName)
+                .append("suffix", suffix)
+                .toString();
+    }
 
     @Override
     public boolean equals(Object o) {
