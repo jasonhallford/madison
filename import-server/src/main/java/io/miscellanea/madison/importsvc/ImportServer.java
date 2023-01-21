@@ -3,6 +3,9 @@ package io.miscellanea.madison.importsvc;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import io.miscellanea.madison.broker.BrokerConfigModule;
+import io.miscellanea.madison.dal.DataSourceModule;
+import io.miscellanea.madison.dal.config.DataSourceConfigModule;
+import io.miscellanea.madison.dal.config.DatabaseConfigModule;
 import io.miscellanea.madison.entity.Document;
 import io.miscellanea.madison.broker.Event;
 import io.miscellanea.madison.broker.EventService;
@@ -32,6 +35,9 @@ public class ImportServer {
         // Create the Guice injector to initialize our dependencies.
         logger.debug("Initializing Guice injector.");
         Injector injector = Guice.createInjector(new BrokerConfigModule(),
+                new DatabaseConfigModule(),
+                new DataSourceConfigModule(),
+                new DataSourceModule(),
                 new ImportServerConfigModule(),
                 new ImportServerModule());
         logger.debug("Guice injector successfully initialized.");

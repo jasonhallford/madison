@@ -14,12 +14,12 @@ import java.util.function.Function;
 
 import org.jooq.Field;
 import org.jooq.ForeignKey;
-import org.jooq.Function5;
+import org.jooq.Function7;
 import org.jooq.Identity;
 import org.jooq.Name;
 import org.jooq.Record;
 import org.jooq.Records;
-import org.jooq.Row5;
+import org.jooq.Row7;
 import org.jooq.Schema;
 import org.jooq.SelectField;
 import org.jooq.Table;
@@ -70,12 +70,22 @@ public class Document extends TableImpl<DocumentRecord> {
     /**
      * The column <code>catalog.document.fingerprint</code>.
      */
-    public final TableField<DocumentRecord, String> FINGERPRINT = createField(DSL.name("fingerprint"), SQLDataType.VARCHAR(50).nullable(false), this, "");
+    public final TableField<DocumentRecord, String> FINGERPRINT = createField(DSL.name("fingerprint"), SQLDataType.VARCHAR(100).nullable(false), this, "");
 
     /**
      * The column <code>catalog.document.content_type</code>.
      */
-    public final TableField<DocumentRecord, String> CONTENT_TYPE = createField(DSL.name("content_type"), SQLDataType.VARCHAR(50).nullable(false), this, "");
+    public final TableField<DocumentRecord, String> CONTENT_TYPE = createField(DSL.name("content_type"), SQLDataType.VARCHAR(100).nullable(false), this, "");
+
+    /**
+     * The column <code>catalog.document.isbn10</code>.
+     */
+    public final TableField<DocumentRecord, String> ISBN10 = createField(DSL.name("isbn10"), SQLDataType.CHAR(10), this, "");
+
+    /**
+     * The column <code>catalog.document.isbn13</code>.
+     */
+    public final TableField<DocumentRecord, String> ISBN13 = createField(DSL.name("isbn13"), SQLDataType.CHAR(13), this, "");
 
     private Document(Name alias, Table<DocumentRecord> aliased) {
         this(alias, aliased, null);
@@ -170,18 +180,18 @@ public class Document extends TableImpl<DocumentRecord> {
     }
 
     // -------------------------------------------------------------------------
-    // Row5 type methods
+    // Row7 type methods
     // -------------------------------------------------------------------------
 
     @Override
-    public Row5<Long, String, Integer, String, String> fieldsRow() {
-        return (Row5) super.fieldsRow();
+    public Row7<Long, String, Integer, String, String, String, String> fieldsRow() {
+        return (Row7) super.fieldsRow();
     }
 
     /**
      * Convenience mapping calling {@link SelectField#convertFrom(Function)}.
      */
-    public <U> SelectField<U> mapping(Function5<? super Long, ? super String, ? super Integer, ? super String, ? super String, ? extends U> from) {
+    public <U> SelectField<U> mapping(Function7<? super Long, ? super String, ? super Integer, ? super String, ? super String, ? super String, ? super String, ? extends U> from) {
         return convertFrom(Records.mapping(from));
     }
 
@@ -189,7 +199,7 @@ public class Document extends TableImpl<DocumentRecord> {
      * Convenience mapping calling {@link SelectField#convertFrom(Class,
      * Function)}.
      */
-    public <U> SelectField<U> mapping(Class<U> toType, Function5<? super Long, ? super String, ? super Integer, ? super String, ? super String, ? extends U> from) {
+    public <U> SelectField<U> mapping(Class<U> toType, Function7<? super Long, ? super String, ? super Integer, ? super String, ? super String, ? super String, ? super String, ? extends U> from) {
         return convertFrom(toType, Records.mapping(from));
     }
 }

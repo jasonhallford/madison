@@ -5,7 +5,7 @@ import org.apache.commons.configuration2.CompositeConfiguration;
 
 public class DatabaseConfigModule extends ConfigModule<DatabaseConfig> {
     public DatabaseConfigModule() {
-        super("/config/schema-migration-service.properties");
+        super("/config/database.properties");
     }
 
     @Override

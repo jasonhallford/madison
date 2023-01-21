@@ -1,15 +1,16 @@
 -- Create the svc_catalog schema and base tables
 CREATE SCHEMA IF NOT EXISTS catalog AUTHORIZATION madison;
 
-
 -- Create the collection table, the base document table to which all other tables join.
 CREATE TABLE IF NOT EXISTS catalog.document
 (
     id           BIGSERIAL PRIMARY KEY,
     title        VARCHAR(100),
     page_count   INTEGER,
-    fingerprint  VARCHAR(50) NOT NULL UNIQUE,
-    content_type VARCHAR(50) NOT NULL
+    fingerprint  VARCHAR(100) NOT NULL UNIQUE,
+    content_type VARCHAR(100) NOT NULL,
+    isbn10       CHAR(10),
+    isbn13       CHAR(13)
 );
 
 CREATE TABLE IF NOT EXISTS catalog.identifiers
@@ -29,6 +30,7 @@ CREATE TABLE catalog.author
     middle_name VARCHAR(50),
     last_name   VARCHAR(50) NOT NULL,
     suffix      VARCHAR(10),
+    code        VARCHAR(50) NOT NULL,
     full_name   VARCHAR(200) GENERATED ALWAYS AS ( first_name || ' ' ||
                                                    CASE WHEN middle_name IS NOT NULL THEN ' ' ELSE '' END ||
                                                    last_name ||

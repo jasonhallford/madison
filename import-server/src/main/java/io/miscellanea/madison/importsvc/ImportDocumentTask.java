@@ -6,6 +6,7 @@ import io.miscellanea.madison.entity.Document;
 import io.miscellanea.madison.content.DocumentStore;
 import io.miscellanea.madison.broker.EventService;
 import io.miscellanea.madison.content.FingerprintGenerator;
+import io.miscellanea.madison.repository.DocumentRepository;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,16 +24,19 @@ public class ImportDocumentTask implements Supplier<Document> {
     private final DocumentStore documentStore;
     private final MetadataExtractor metadataExtractor;
     private final EventService eventService;
+    private final DocumentRepository documentRepository;
 
     private URL documentUrl;
 
     // Constructors
     @Inject
     public ImportDocumentTask(@NotNull FingerprintGenerator fingerprintGenerator, @NotNull DocumentStore documentStore,
-                              @NotNull MetadataExtractor metadataExtractor, @NotNull EventService eventService) {
+                              @NotNull MetadataExtractor metadataExtractor,
+                              @NotNull DocumentRepository documentRepository, @NotNull EventService eventService) {
         this.fingerprintGenerator = fingerprintGenerator;
         this.documentStore = documentStore;
         this.metadataExtractor = metadataExtractor;
+        this.documentRepository = documentRepository;
         this.eventService = eventService;
     }
 
@@ -54,7 +58,8 @@ public class ImportDocumentTask implements Supplier<Document> {
 
         try (InputStream docStream = this.documentUrl.openStream()) {
             Document doc = this.metadataExtractor.fromStream(fingerprint, docStream);
-            documentStore.store(doc, documentUrl);
+            this.documentStore.store(doc, documentUrl);
+            this.documentRepository.add(doc);
 
             return doc;
         } catch (ContentException ce) {
@@ -62,6 +67,8 @@ public class ImportDocumentTask implements Supplier<Document> {
         } catch (Exception e) {
             throw new ContentException("Unable to extract metadata from document at URL " +
                     this.documentUrl.toExternalForm() + ".", e);
+        } finally {
+            this.documentRepository.close();
         }
     }
 }

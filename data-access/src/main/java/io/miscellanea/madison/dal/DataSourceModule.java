@@ -46,6 +46,7 @@ public class DataSourceModule extends AbstractModule {
 
     @Inject
     @CheckedProvides(ConnectionProvider.class)
+    @Provides
     public Connection produceConnection(DataSource dataSource) throws SQLException {
         long ts = System.currentTimeMillis();
 

@@ -1,5 +1,6 @@
 package io.miscellanea.madison.entity;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -10,11 +11,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
-public class Author {
+public class Author extends AbstractEntity {
     // Fields
     private static final Logger logger = LoggerFactory.getLogger(Author.class);
 
-    private static final Pattern nameAndPattern = Pattern.compile(",*\\s*(and|\\&)\\s*");
+    private static final Pattern nameAndPattern = Pattern.compile(",*\\s*(and|&)\\s*");
     private static final Pattern nameWhitespacePattern = Pattern.compile(",\\s+");
 
     private String firstName;
@@ -103,19 +104,22 @@ public class Author {
         var builder = new StringBuilder();
 
         builder.append(this.firstName).append(" ");
-        if (!this.middleName.isEmpty()) {
+        if (this.middleName != null && !this.middleName.isEmpty()) {
             builder.append(this.middleName).append(" ");
         }
         builder.append(this.lastName);
-        if (!this.suffix.isEmpty()) {
+        if (this.suffix != null && !this.suffix.isEmpty()) {
             builder.append(", ").append(this.suffix);
         }
 
         return builder.toString();
     }
 
-    // Methods
+    public String getCode() {
+        return DigestUtils.md5Hex(this.getFullName().replaceAll(" ", "").toLowerCase());
+    }
 
+    // Methods
     @Override
     public String toString() {
         return new ToStringBuilder(this)

@@ -1,4 +1,4 @@
 package io.miscellanea.madison.broker;
 
-public interface UnitOfWork {
+public interface Message {
 }

@@ -5,7 +5,7 @@ import org.apache.commons.configuration2.CompositeConfiguration;
 
 public class DataSourceConfigModule extends ConfigModule<DataSourceConfig> {
     public DataSourceConfigModule() {
-        super("/config/schema-migration-service.properties");
+        super("/config/data-source.properties");
     }
 
     @Override

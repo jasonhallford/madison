@@ -1,6 +1,9 @@
 package io.miscellanea.madison.dal.repository;
 
+import io.miscellanea.madison.dal.jooq.tables.records.AuthorDocumentRecord;
+import io.miscellanea.madison.dal.jooq.tables.records.AuthorRecord;
 import io.miscellanea.madison.dal.jooq.tables.records.DocumentRecord;
+import io.miscellanea.madison.entity.Author;
 import io.miscellanea.madison.entity.Document;
 import io.miscellanea.madison.repository.DocumentRepository;
 import io.miscellanea.madison.repository.RepositoryException;
@@ -9,6 +12,8 @@ import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
 
+import static io.miscellanea.madison.dal.jooq.Tables.AUTHOR;
+import static io.miscellanea.madison.dal.jooq.Tables.AUTHOR_DOCUMENT;
 import static io.miscellanea.madison.dal.jooq.tables.Document.DOCUMENT;
 
 import org.slf4j.Logger;
@@ -49,7 +54,70 @@ public class JooqDocumentRepository implements DocumentRepository {
 
     @Override
     public void add(Document document) {
+        DSLContext create = DSL.using(this.connection, SQLDialect.POSTGRES);
+        create.transaction(trx -> {
+            // Does the document already exist? If so, then we don't need to add it to the database.
+            DocumentRecord documentRecord = trx.dsl().selectFrom(DOCUMENT)
+                    .where(DOCUMENT.FINGERPRINT.eq(document.getFingerPrint())).fetchOne();
+            if (documentRecord == null) {
+                logger.debug("INSERTing document with fingerprint {} into database.", document.getFingerPrint());
+                documentRecord = trx.dsl().insertInto(DOCUMENT)
+                        .set(DOCUMENT.CONTENT_TYPE, document.getContentType())
+                        .set(DOCUMENT.FINGERPRINT, document.getFingerPrint())
+                        .set(DOCUMENT.PAGE_COUNT, document.getPageCount())
+                        .set(DOCUMENT.TITLE, document.getTitle())
+                        .set(DOCUMENT.ISBN10, document.getIsbn10())
+                        .set(DOCUMENT.ISBN13, document.getIsbn13())
+                        .returning()
+                        .fetchOne();
 
+                document.setId(documentRecord.getId());
+                logger.debug("Document with fingerprint {} inserted into database with ID {}.", document.getFingerPrint(),
+                        document.getId());
+                if (document.getAuthors() != null && document.getAuthors().size() > 0) {
+                    for (Author author : document.getAuthors()) {
+                        AuthorRecord authorRecord = trx.dsl().selectFrom(AUTHOR)
+                                .where(AUTHOR.CODE.eq(author.getCode())).fetchOne();
+                        if (authorRecord == null) {
+                            logger.debug("Adding new author with code {} to database.", author.getCode());
+                            authorRecord = trx.dsl().insertInto(AUTHOR)
+                                    .set(AUTHOR.FIRST_NAME, author.getFirstName())
+                                    .set(AUTHOR.LAST_NAME, author.getLastName())
+                                    .set(AUTHOR.MIDDLE_NAME, author.getMiddleName())
+                                    .set(AUTHOR.SUFFIX, author.getSuffix())
+                                    .set(AUTHOR.CODE, author.getCode())
+                                    .returning()
+                                    .fetchOne();
+
+                            author.setId(authorRecord.getId());
+                            logger.debug("Successfully inserted author with code {} into database with ID {}.",
+                                    author.getCode(), author.getId());
+                        } else {
+                            logger.debug("Author with code {} already exists in database with ID {}.",
+                                    authorRecord.getCode(), authorRecord.getId());
+                            author.setId(authorRecord.getId());
+                        }
+
+                        logger.debug("Connecting author to document.");
+                        AuthorDocumentRecord authorDocumentRecord = trx.dsl().selectFrom(AUTHOR_DOCUMENT)
+                                .where(AUTHOR_DOCUMENT.AUTHOR_ID.eq(author.getId()))
+                                .and(AUTHOR_DOCUMENT.DOCUMENT_ID.eq(document.getId())).fetchOne();
+                        if (authorDocumentRecord == null) {
+                            trx.dsl().insertInto(AUTHOR_DOCUMENT)
+                                    .set(AUTHOR_DOCUMENT.DOCUMENT_ID, document.getId())
+                                    .set(AUTHOR_DOCUMENT.AUTHOR_ID, author.getId())
+                                    .execute();
+                            logger.debug("Successfully linked author and document.");
+                        } else {
+                            logger.debug("Linkage already exists between author and document.");
+                        }
+                    }
+                }
+            } else {
+                logger.warn("A document with fingerprint {} already exists in the collection; ignoring request.",
+                        document.getFingerPrint());
+            }
+        });
     }
 
     @Override
@@ -69,15 +137,21 @@ public class JooqDocumentRepository implements DocumentRepository {
 
     @Override
     public int size() {
-        return 0;
+        DSLContext create = DSL.using(this.connection, SQLDialect.POSTGRES);
+        return create.fetchCount(DOCUMENT);
     }
 
     @Override
-    public void close() throws Exception {
-        if (!this.connection.isClosed()) {
-            logger.debug("Closing JDBC connection.");
-            this.connection.close();
-            logger.debug("JDBC connection successfully closed.");
+    public void close() throws RepositoryException {
+        try {
+            if (!this.connection.isClosed()) {
+                logger.debug("Closing JDBC connection.");
+                this.connection.close();
+                logger.debug("JDBC connection successfully closed.");
+            }
+        } catch (Exception e) {
+            throw new RepositoryException("Unable to close document repository.", e);
         }
     }
+
 }
