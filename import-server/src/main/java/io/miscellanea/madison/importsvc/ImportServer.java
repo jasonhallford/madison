@@ -2,13 +2,13 @@ package io.miscellanea.madison.importsvc;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import io.miscellanea.madison.broker.BrokerConfigModule;
+import com.google.inject.Key;
+import io.miscellanea.madison.broker.*;
+import io.miscellanea.madison.broker.redis.RedisImportMessage;
 import io.miscellanea.madison.dal.DataSourceModule;
 import io.miscellanea.madison.dal.config.DataSourceConfigModule;
 import io.miscellanea.madison.dal.config.DatabaseConfigModule;
 import io.miscellanea.madison.entity.Document;
-import io.miscellanea.madison.broker.Event;
-import io.miscellanea.madison.broker.EventService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,7 +17,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.Path;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
@@ -47,13 +46,14 @@ public class ImportServer {
         ImportServerConfig config = injector.getInstance(ImportServerConfig.class);
         executorService = Executors.newFixedThreadPool(config.taskPoolSize());
 
-        EventService eventService = injector.getInstance(EventService.class);
+        // Inject a reference to the import message queue.
+        Queue<ImportMessage> importQueue = injector.getInstance(new Key<>() {
+        });
 
-        // Register a handler for the IMPORT_ALL event. This
-        eventService.registerHandler((event) -> processImportScanEvent(config, eventService, event),
+        // Inject a reference to the Event Service and subscribe to the IMPORT_SCAN event.
+        EventService eventService = injector.getInstance(EventService.class);
+        eventService.subscribe((event) -> processImportScanEvent(config, importQueue, event),
                 Event.Type.IMPORT_SCAN);
-        eventService.registerHandler((event) -> processImportDocumentEvent(injector, config, eventService, event),
-                Event.Type.IMPORT_DOCUMENT);
         eventService.accept();
 
         // Register a shutdown handler to terminate the event service and any running
@@ -65,17 +65,33 @@ public class ImportServer {
             try {
                 eventService.close();
                 logger.debug("Closed event service connection.");
+
+                importQueue.close();
+                logger.debug("Closed import queue connection.");
             } catch (Exception e) {
                 logger.error("Unable to close event service connection.", e);
             }
+
             logger.info("Madison Import Service terminated.");
         }));
 
-        logger.info("Madison Import Service online and listening for events.");
+        logger.info("Madison Import Service initialized and on-line.");
+
+        // Enter into a loop where we consume messages from the import queue.
+        while (importQueue.isConnected()) {
+            ImportMessage message = importQueue.poll(5, RedisImportMessage.class);
+            if (message != null) {
+                logger.debug("Received import message: {}", message);
+                logger.debug("Submitting import job to executor service.");
+                executorService.submit(() -> importDocument(injector, config, eventService, message));
+            } else {
+                logger.debug("No messages received; re-polling broker.");
+            }
+        }
     }
 
     private static void processImportScanEvent(ImportServerConfig importServerConfig,
-                                               EventService eventService, Event event) {
+                                               Queue<ImportMessage> importQueue, Event event) {
         logger.debug("Processing IMPORT_SCAN event.");
 
         // Walk the import directory and generate an IMPORT event for every entry.
@@ -84,9 +100,9 @@ public class ImportServer {
 
             for (Path file : docsToImport) {
                 String url = file.toUri().toString();
-                var importEvent = new Event(Event.Type.IMPORT_DOCUMENT, url);
-                eventService.publish(importEvent);
-                logger.debug("Published event to import file at '{}'.", url);
+                var importMessage = new ImportMessage("import-server", url);
+                importQueue.publish(importMessage);
+                logger.debug("Published message to import file at '{}'.", url);
             }
 
             logger.debug("Finished processing IMPORT_SCAN event.");
@@ -95,27 +111,20 @@ public class ImportServer {
         }
     }
 
-    private static void processImportDocumentEvent(Injector injector, ImportServerConfig importServerConfig,
-                                                   EventService eventService, Event event) {
-        logger.debug("Processing IMPORT event.");
-
+    private static void importDocument(Injector injector, ImportServerConfig importServerConfig,
+                                       EventService eventService, ImportMessage importMessage) {
         try {
-            String payload = event.getPayload();
-            URL docUrl = new URL(payload);
+            URL docUrl = new URL(importMessage.getDocumentUrl());
 
             var importTask = injector.getInstance(ImportDocumentTask.class);
             importTask.setDocumentUrl(docUrl);
 
-            CompletableFuture<Document> future = CompletableFuture.supplyAsync(importTask, executorService);
-            future.whenComplete((document, ex) -> {
-                if (ex == null) {
-                    logger.debug("Successfully imported document into content store.");
-                } else {
-                    logger.error("Unable to import document into content store.", ex);
-                }
-            });
+            logger.debug("Importing document from URL {}.", docUrl.toExternalForm());
+            Document document = importTask.get();
+            logger.info("Successfully imported document from URL {}.", docUrl.toExternalForm());
         } catch (Exception e) {
-            logger.error("IMPORT event contains an invalid URL.", e);
+            logger.error("An error occurred while importing document from URL " + importMessage.getDocumentUrl() + "."
+                    , e);
         }
     }
 }

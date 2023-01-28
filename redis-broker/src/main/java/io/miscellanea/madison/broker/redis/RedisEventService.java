@@ -57,13 +57,13 @@ public class RedisEventService implements EventService {
     }
 
     @Override
-    public void registerHandler(@NotNull Consumer<Event> eventConsumer, Event.Type... forEvents) throws ServiceException {
+    public void subscribe(@NotNull Consumer<Event> subscriber, Event.Type... forEvents) throws ServiceException {
         if (forEvents == null || forEvents.length < 1) {
-            this.defaultHandler = eventConsumer;
+            this.defaultHandler = subscriber;
         } else {
             for (var evt : forEvents) {
-                var handlerList = this.handlers.computeIfAbsent(evt, k -> new ArrayList<Consumer<Event>>());
-                handlerList.add(eventConsumer);
+                var handlerList = this.handlers.computeIfAbsent(evt, k -> new ArrayList<>());
+                handlerList.add(subscriber);
             }
         }
     }
@@ -97,22 +97,26 @@ public class RedisEventService implements EventService {
     }
 
     @Override
-    public void close() throws Exception {
-        if (this.subClient.isConnected()) {
-            this.subClient.close();
-            logger.debug("Closed Redis subscriber connection.");
-        }
+    public void close() throws ServiceException {
+        try {
+            if (this.subClient.isConnected()) {
+                this.subClient.close();
+                logger.debug("Closed Redis subscriber connection.");
+            }
 
-        if (this.pubClient.isConnected()) {
-            this.pubClient.close();
-            logger.debug("Closed Redis publisher connection.");
-        }
+            if (this.pubClient.isConnected()) {
+                this.pubClient.close();
+                logger.debug("Closed Redis publisher connection.");
+            }
 
-        if (this.subscriber != null) {
-            logger.debug("Interrupting subscriber thread and waiting for termination.");
-            this.subscriber.interrupt();
-            this.subscriber.join();
-            logger.debug("Subscriber thread successfully terminated.");
+            if (this.subscriber != null) {
+                logger.debug("Interrupting subscriber thread and waiting for termination.");
+                this.subscriber.interrupt();
+                this.subscriber.join();
+                logger.debug("Subscriber thread successfully terminated.");
+            }
+        } catch (Exception e) {
+            throw new ServiceException("Unable to close Redis Event Service.", e);
         }
 
     }

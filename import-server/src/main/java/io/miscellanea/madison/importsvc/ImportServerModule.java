@@ -2,6 +2,10 @@ package io.miscellanea.madison.importsvc;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
+import io.miscellanea.madison.broker.BrokerConfig;
+import io.miscellanea.madison.broker.ImportMessage;
+import io.miscellanea.madison.broker.Queue;
+import io.miscellanea.madison.broker.redis.RedisQueue;
 import io.miscellanea.madison.content.*;
 import io.miscellanea.madison.broker.redis.RedisEventService;
 import io.miscellanea.madison.broker.EventService;
@@ -42,5 +46,13 @@ public class ImportServerModule extends AbstractModule {
     @Provides
     public String provideContentRoot(ImportServerConfig config) {
         return config.contentDir();
+    }
+
+
+    @Inject
+    @Provides
+    @Singleton
+    public Queue<ImportMessage> provideImportQueue(BrokerConfig brokerConfig) {
+        return new RedisQueue<>(brokerConfig, "madison.import");
     }
 }
