@@ -3,14 +3,17 @@ package io.miscellanea.madison.content;
 import io.miscellanea.madison.entity.Document;
 import org.jetbrains.annotations.NotNull;
 
+import java.awt.image.BufferedImage;
 import java.net.URL;
 
 public interface DocumentStore {
-    public URL find(@NotNull Document document) throws ContentException;
+    URL content(@NotNull Document document) throws ContentException;
 
-    public void store(@NotNull Document document, URL content) throws ContentException;
+    URL thumbnail(@NotNull Document document) throws ContentException;
 
-    public boolean delete(@NotNull Document document);
+    void store(@NotNull Document document, BufferedImage thumbnail, URL content) throws ContentException;
 
-    public boolean exists(@NotNull Document document);
+    boolean delete(@NotNull Document document);
+
+    boolean exists(@NotNull Document document);
 }

@@ -12,6 +12,7 @@ public class ImportServerConfigModule extends ConfigModule<ImportServerConfig> {
     protected ImportServerConfig produceConfiguration(CompositeConfiguration configuration) {
         return new ImportServerConfig(configuration.getString("import.dir"),
                 configuration.getString("import.content.dir"),
-                configuration.getInt("import.task-pool-size"), configuration.getString("import.tika-url"));
+                configuration.getInt("import.task-pool-size"), configuration.getString("import.tika-url"),
+                configuration.getBoolean("import.delete-after-store"));
     }
 }

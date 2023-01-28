@@ -29,6 +29,7 @@ public class ImportServerModule extends AbstractModule {
         bind(DocumentStore.class).to(FileSystemDocumentStore.class);
         bind(MetadataExtractor.class).to(TikaMetadataExtractor.class);
         bind(DocumentRepository.class).to(JooqDocumentRepository.class);
+        bind(ThumbnailGenerator.class).to(PdfBoxThumbnailGenerator.class);
     }
 
     // Producer methods

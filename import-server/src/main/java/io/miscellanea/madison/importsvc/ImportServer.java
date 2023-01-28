@@ -122,6 +122,18 @@ public class ImportServer {
             logger.debug("Importing document from URL {}.", docUrl.toExternalForm());
             Document document = importTask.get();
             logger.info("Successfully imported document from URL {}.", docUrl.toExternalForm());
+
+            if (importServerConfig.deleteAfterImport()) {
+                if (docUrl.getProtocol().equalsIgnoreCase("file")) {
+                    Path filePath = Path.of(docUrl.toURI());
+                    try {
+                        Files.delete(filePath);
+                    } catch (Exception e) {
+                        logger.warn("Unable to delete imported file {}: {}", filePath, e.getMessage());
+                    }
+                }
+
+            }
         } catch (Exception e) {
             logger.error("An error occurred while importing document from URL " + importMessage.getDocumentUrl() + "."
                     , e);
