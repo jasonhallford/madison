@@ -2,11 +2,14 @@ package io.miscellanea.madison.catalog;
 
 import io.miscellanea.madison.broker.Event;
 import io.miscellanea.madison.broker.EventService;
+import io.miscellanea.madison.broker.ImportMessage;
+import io.miscellanea.madison.broker.Queue;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
+import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
@@ -14,6 +17,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import java.io.File;
+import java.util.List;
 
 public class ApiVertical extends AbstractVerticle {
     // Fields
@@ -22,12 +27,14 @@ public class ApiVertical extends AbstractVerticle {
     private HttpServer httpServer;
     private final CatalogApiConfig catalogApiConfig;
     private final EventService eventService;
+    private final Queue<ImportMessage> importQueue;
 
     // Constructors
     @Inject
-    public ApiVertical(CatalogApiConfig catalogApiConfig, EventService eventService) {
+    public ApiVertical(CatalogApiConfig catalogApiConfig, EventService eventService, Queue<ImportMessage> importQueue) {
         this.catalogApiConfig = catalogApiConfig;
         this.eventService = eventService;
+        this.importQueue = importQueue;
     }
 
     // Initialize the HTTP server on deploy.
@@ -60,7 +67,8 @@ public class ApiVertical extends AbstractVerticle {
         router.route().handler(BodyHandler.create(this.catalogApiConfig.uploadDirectory()));
 
         // Bind import endpoints
-        router.get("/api/import/scan").handler(this::requestImportScan);
+        router.get("/api/import/scan").handler(this::handleImportScan);
+        router.post("/api/import").handler(this::handleImport);
 
         // Create the default handler (which will return a bad request code).
         router.route().handler(ctx -> {
@@ -72,7 +80,7 @@ public class ApiVertical extends AbstractVerticle {
         logger.debug("API routes successfully configured.");
     }
 
-    private void requestImportScan(RoutingContext ctx) {
+    private void handleImportScan(RoutingContext ctx) {
         logger.debug("Handling request to notify import service.");
 
         Event event = new Event(Event.Type.IMPORT_SCAN);
@@ -96,5 +104,41 @@ public class ApiVertical extends AbstractVerticle {
                 ctx.response().setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code()).end();
             }
         });
+    }
+
+    private void handleImport(RoutingContext ctx) {
+        logger.debug("Handling request to import document.");
+
+        List<FileUpload> uploads = ctx.fileUploads();
+        if (uploads.size() > 0) {
+            try {
+                String uploadPath = uploads.get(0).uploadedFileName();
+                String docUrl = new File(uploadPath).toURI().toURL().toExternalForm();
+                ImportMessage message = new ImportMessage("catalog-api", docUrl);
+
+                vertx.executeBlocking(promise -> {
+                    try {
+                        this.importQueue.publish(message);
+                        promise.complete();
+                    } catch (Exception e) {
+                        promise.fail(e);
+                    }
+                }, result -> {
+                    if (result.succeeded()) {
+                        logger.debug("Successfully dispatched import message for file {}.", docUrl);
+                        ctx.response().setStatusCode(HttpResponseStatus.OK.code()).end();
+                    } else {
+                        logger.error("Unable to dispatch import message.", result.cause());
+                        ctx.response().setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code()).end();
+                    }
+                });
+            } catch (Exception e) {
+                logger.error("Unable to dispatch import message.", e);
+                ctx.response().setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code()).end();
+            }
+        } else {
+            // This is a bad request if the post doesn't contain a file.
+            ctx.response().setStatusCode(HttpResponseStatus.BAD_REQUEST.code()).end();
+        }
     }
 }

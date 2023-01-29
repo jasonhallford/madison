@@ -8,7 +8,10 @@ import org.slf4j.LoggerFactory;
 import javax.imageio.ImageIO;
 import javax.inject.Inject;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.BufferedOutputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -63,7 +66,7 @@ public class FileSystemDocumentStore implements DocumentStore {
 
     // DocumentStore
     @Override
-    public URL content(Document document) throws ContentException {
+    public URL source(Document document) throws ContentException {
         logger.debug("Looking for content for document with fingerprint '{}'.", document.getFingerPrint());
         Path docPath = this.documentPath(document);
 
@@ -79,8 +82,8 @@ public class FileSystemDocumentStore implements DocumentStore {
     }
 
     @Override
-    public void store(Document document, BufferedImage thumbnail, URL content) throws ContentException {
-        logger.debug("Processing request to store document at {} with fingerprint {}.", content.toExternalForm(),
+    public void store(Document document, BufferedImage thumbnail, URL source) throws ContentException {
+        logger.debug("Processing request to store document at {} with fingerprint {}.", source.toExternalForm(),
                 document.getFingerPrint());
 
         // Do not overwrite an existing document, just log a warning.
@@ -88,7 +91,7 @@ public class FileSystemDocumentStore implements DocumentStore {
             logger.warn("A document with fingerprint {} already exists in the store and will not be overwritten.",
                     document.getFingerPrint());
         } else {
-            this.storeDocument(document, content);
+            this.storeDocument(document, source);
             this.storeThumbnail(document, thumbnail);
         }
     }
@@ -97,24 +100,21 @@ public class FileSystemDocumentStore implements DocumentStore {
     public boolean delete(@NotNull Document document) {
         boolean deleted = false;
 
-        if (document != null) {
-            Path docPath = this.documentPath(document);
-
-            if (Files.exists(docPath)) {
-                try {
-                    Files.delete(docPath);
-                    deleted = true;
-                } catch (IOException e) {
-                    logger.warn("Unable to delete document with fingerprint '{}': {}", document.getFingerPrint(), e.getMessage());
-                }
+        try {
+            deleted = this.deleteContent(this.documentPath(document));
+            if (deleted) {
+                deleted = this.deleteContent(this.thumbnailPath(document));
             }
+        } catch (Exception e) {
+            logger.error("Unable to delete document with fingerprint " + document.getFingerPrint() +
+                    "; returning false.", e);
         }
 
         return deleted;
     }
 
     @Override
-    public boolean exists(Document document) {
+    public boolean exists(@NotNull Document document) {
         boolean exists = Files.exists(this.documentPath(document));
         logger.debug("Document fingerprint {} exist: {}", document.getFingerPrint(), exists);
 
@@ -122,6 +122,19 @@ public class FileSystemDocumentStore implements DocumentStore {
     }
 
     // Private methods
+    private boolean deleteContent(@NotNull Path atPath) throws ContentException {
+        if (Files.exists(atPath)) {
+            try {
+                Files.delete(atPath);
+                return true;
+            } catch (IOException e) {
+                throw new ContentException("Unable to delete content at path '" + atPath + "'.", e);
+            }
+        } else {
+            return false;
+        }
+    }
+
     private URL getContentUrl(@NotNull Document document, Path contentPath) {
         URL contentUrl = null;
         if (this.exists(document)) {

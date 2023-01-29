@@ -14,9 +14,9 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.function.Supplier;
 
-public class ImportDocumentTask implements Supplier<Document> {
+public class DocumentSupplier implements Supplier<Document> {
     // Fields
-    private static final Logger logger = LoggerFactory.getLogger(ImportDocumentTask.class);
+    private static final Logger logger = LoggerFactory.getLogger(DocumentSupplier.class);
 
     private final FingerprintGenerator fingerprintGenerator;
     private final DocumentStore documentStore;
@@ -29,9 +29,9 @@ public class ImportDocumentTask implements Supplier<Document> {
 
     // Constructors
     @Inject
-    public ImportDocumentTask(@NotNull FingerprintGenerator fingerprintGenerator, @NotNull DocumentStore documentStore,
-                              @NotNull MetadataExtractor metadataExtractor, @NotNull ThumbnailGenerator thumbnailGenerator,
-                              @NotNull DocumentRepository documentRepository, @NotNull EventService eventService) {
+    public DocumentSupplier(@NotNull FingerprintGenerator fingerprintGenerator, @NotNull DocumentStore documentStore,
+                            @NotNull MetadataExtractor metadataExtractor, @NotNull ThumbnailGenerator thumbnailGenerator,
+                            @NotNull DocumentRepository documentRepository, @NotNull EventService eventService) {
         this.fingerprintGenerator = fingerprintGenerator;
         this.documentStore = documentStore;
         this.metadataExtractor = metadataExtractor;

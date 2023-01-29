@@ -116,7 +116,7 @@ public class ImportServer {
         try {
             URL docUrl = new URL(importMessage.getDocumentUrl());
 
-            var importTask = injector.getInstance(ImportDocumentTask.class);
+            var importTask = injector.getInstance(DocumentSupplier.class);
             importTask.setDocumentUrl(docUrl);
 
             logger.debug("Importing document from URL {}.", docUrl.toExternalForm());
