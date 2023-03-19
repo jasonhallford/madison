@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.awt.image.BufferedImage;
-import java.io.InputStream;
 import java.net.URL;
 import java.util.function.Supplier;
 
@@ -21,6 +20,7 @@ public class DocumentSupplier implements Supplier<Document> {
     private final FingerprintGenerator fingerprintGenerator;
     private final DocumentStore documentStore;
     private final MetadataExtractor metadataExtractor;
+    private final ContentExtractor contentExtractor;
     private final EventService eventService;
     private final DocumentRepository documentRepository;
     private final ThumbnailGenerator thumbnailGenerator;
@@ -30,11 +30,13 @@ public class DocumentSupplier implements Supplier<Document> {
     // Constructors
     @Inject
     public DocumentSupplier(@NotNull FingerprintGenerator fingerprintGenerator, @NotNull DocumentStore documentStore,
-                            @NotNull MetadataExtractor metadataExtractor, @NotNull ThumbnailGenerator thumbnailGenerator,
-                            @NotNull DocumentRepository documentRepository, @NotNull EventService eventService) {
+                            @NotNull MetadataExtractor metadataExtractor, @NotNull ContentExtractor contentExtractor,
+                            @NotNull ThumbnailGenerator thumbnailGenerator, @NotNull DocumentRepository documentRepository,
+                            @NotNull EventService eventService) {
         this.fingerprintGenerator = fingerprintGenerator;
         this.documentStore = documentStore;
         this.metadataExtractor = metadataExtractor;
+        this.contentExtractor = contentExtractor;
         this.thumbnailGenerator = thumbnailGenerator;
         this.documentRepository = documentRepository;
         this.eventService = eventService;
@@ -56,11 +58,12 @@ public class DocumentSupplier implements Supplier<Document> {
         String fingerprint = this.fingerprintGenerator.fromUrl(this.documentUrl);
         logger.debug("Fingerprint for document at {} is {}.", this.documentUrl.toExternalForm(), fingerprint);
 
-        try (InputStream docStream = this.documentUrl.openStream()) {
-            Document doc = this.metadataExtractor.fromStream(fingerprint, docStream);
-            BufferedImage thumbnail = this.thumbnailGenerator.generate(documentUrl);
+        try {
+            Document doc = this.metadataExtractor.extract(fingerprint, documentUrl);
+            BufferedImage thumbnail = this.thumbnailGenerator.generate(fingerprint, documentUrl);
+            String content = this.contentExtractor.extract(fingerprint,documentUrl);
 
-            this.documentStore.store(doc, thumbnail, documentUrl);
+            this.documentStore.store(doc, thumbnail, content, documentUrl);
             this.documentRepository.add(doc);
 
             return doc;

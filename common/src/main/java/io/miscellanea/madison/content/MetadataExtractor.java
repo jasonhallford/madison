@@ -2,8 +2,8 @@ package io.miscellanea.madison.content;
 
 import io.miscellanea.madison.entity.Document;
 
-import java.io.InputStream;
+import java.net.URL;
 
 public interface MetadataExtractor {
-    Document fromStream(String fingerprint, InputStream documentStream) throws ContentException;
+    Document extract(String fingerprint, URL documentURL) throws ContentException;
 }

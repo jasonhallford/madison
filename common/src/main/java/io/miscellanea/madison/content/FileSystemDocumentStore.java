@@ -8,81 +8,77 @@ import org.slf4j.LoggerFactory;
 import javax.imageio.ImageIO;
 import javax.inject.Inject;
 import java.awt.image.BufferedImage;
-import java.io.BufferedOutputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
+import java.util.zip.GZIPOutputStream;
 
 public class FileSystemDocumentStore implements DocumentStore {
     // Fields
     private static final Logger logger = LoggerFactory.getLogger(FileSystemDocumentStore.class);
+    public static final String DOCUMENT_COMPONENT = "document";
+    public static final String THUMBNAIL_COMPONENT = "thumbnail";
+    public static final String TEXT_COMPONENT = "text";
+    public static final String DOCUMENT_COMPONENT_EXTENSION = ".document";
+    public static final String THUMBNAIL_COMPONENT_EXTENSION = ".thumbnail";
+    public static final String TEXT_COMPONENT_EXTENSION = ".text";
 
     private final Path documentRoot;
     private final Path thumbnailRoot;
+    private final Path textRoot;
 
     // Constructors
     @Inject
-    public FileSystemDocumentStore(@ContentRoot @NotNull String contentRoot) throws ContentException {
-        Path contentPath;
+    public FileSystemDocumentStore(@StorageRoot @NotNull String storageRoot) throws ContentException {
+        Path storagePath;
         try {
-            contentPath = Path.of(contentRoot);
+            storagePath = Path.of(storageRoot);
         } catch (InvalidPathException e) {
-            throw new ContentException("'" + contentRoot + "' is not a valid file path.", e);
+            throw new ContentException("'" + storageRoot + "' is not a valid file path.", e);
         }
 
-        if (!contentPath.isAbsolute() || !Files.exists(contentPath)) {
+        if (!storagePath.isAbsolute() || !Files.exists(storagePath)) {
             throw new ContentException("contentRoot must be an absolute path to an existing directory.");
         } else {
-            logger.debug("Content root '{}' exists.", contentPath);
+            logger.debug("Content root '{}' exists.", storagePath);
         }
 
-        try {
-            this.documentRoot = contentPath.resolve("document");
-
-            if (!Files.exists(this.documentRoot)) {
-                logger.debug("Creating new document directory '{}'.", this.documentRoot);
-                Files.createDirectory(this.documentRoot);
-            }
-        } catch (IOException e) {
-            throw new ContentException("Unable to create document directory.", e);
-        }
-
-        try {
-            this.thumbnailRoot = contentPath.resolve("thumbnail");
-
-            if (!Files.exists(this.thumbnailRoot)) {
-                logger.debug("Creating new thumbnail directory '{}'.", this.thumbnailRoot);
-                Files.createDirectory(this.thumbnailRoot);
-            }
-        } catch (IOException e) {
-            throw new ContentException("Unable to create thumbnail directory.", e);
-        }
+        this.documentRoot = this.createStorageComponentDirectory(storagePath, DOCUMENT_COMPONENT);
+        this.thumbnailRoot = this.createStorageComponentDirectory(storagePath, THUMBNAIL_COMPONENT);
+        this.textRoot = this.createStorageComponentDirectory(storagePath, TEXT_COMPONENT);
     }
 
     // DocumentStore
     @Override
-    public URL source(Document document) throws ContentException {
-        logger.debug("Looking for content for document with fingerprint '{}'.", document.getFingerPrint());
-        Path docPath = this.documentPath(document);
+    public URL sourceURL(@NotNull Document document) throws ContentException {
+        logger.debug("Looking for source for document with fingerprint '{}'.", document.getFingerPrint());
+        Path docPath = this.componentPath(document, DOCUMENT_COMPONENT);
 
         return getContentUrl(document, docPath);
     }
 
     @Override
-    public URL thumbnail(@NotNull Document document) throws ContentException {
+    public URL thumbnailURL(@NotNull Document document) throws ContentException {
         logger.debug("Looking for thumbnail for document with fingerprint '{}'.", document.getFingerPrint());
-        Path thumbnailPath = this.thumbnailPath(document);
+        Path thumbnailPath = this.componentPath(document, THUMBNAIL_COMPONENT);
 
         return getContentUrl(document, thumbnailPath);
     }
 
     @Override
-    public void store(Document document, BufferedImage thumbnail, URL source) throws ContentException {
+    public URL textURL(@NotNull Document document) throws ContentException {
+        logger.debug("Looking for text for document with fingerprint '{}'.", document.getFingerPrint());
+        Path textPath = this.componentPath(document, TEXT_COMPONENT);
+
+        return getContentUrl(document, textPath);
+    }
+
+    @Override
+    public synchronized void store(@NotNull Document document, BufferedImage thumbnail, String content, URL source) throws ContentException {
         logger.debug("Processing request to store document at {} with fingerprint {}.", source.toExternalForm(),
                 document.getFingerPrint());
 
@@ -93,17 +89,21 @@ public class FileSystemDocumentStore implements DocumentStore {
         } else {
             this.storeDocument(document, source);
             this.storeThumbnail(document, thumbnail);
+            this.storeText(document, content);
         }
     }
 
     @Override
-    public boolean delete(@NotNull Document document) {
+    public synchronized boolean delete(@NotNull Document document) {
         boolean deleted = false;
 
         try {
-            deleted = this.deleteContent(this.documentPath(document));
+            deleted = this.deleteContent(this.componentPath(document, DOCUMENT_COMPONENT));
             if (deleted) {
-                deleted = this.deleteContent(this.thumbnailPath(document));
+                deleted = this.deleteContent(this.componentPath(document, THUMBNAIL_COMPONENT));
+            }
+            if (deleted) {
+                deleted = this.deleteContent(this.componentPath(document, TEXT_COMPONENT));
             }
         } catch (Exception e) {
             logger.error("Unable to delete document with fingerprint " + document.getFingerPrint() +
@@ -114,14 +114,31 @@ public class FileSystemDocumentStore implements DocumentStore {
     }
 
     @Override
-    public boolean exists(@NotNull Document document) {
-        boolean exists = Files.exists(this.documentPath(document));
+    public synchronized boolean exists(@NotNull Document document) {
+        boolean exists = Files.exists(this.componentPath(document, DOCUMENT_COMPONENT));
         logger.debug("Document fingerprint {} exist: {}", document.getFingerPrint(), exists);
 
         return exists;
     }
 
     // Private methods
+    private Path createStorageComponentDirectory(Path root, String component) throws ContentException {
+        Path path;
+
+        try {
+            path = root.resolve(component);
+
+            if (!Files.exists(path)) {
+                logger.debug("Creating new storage component directory '{}'.", path);
+                Files.createDirectory(path);
+            }
+        } catch (IOException e) {
+            throw new ContentException("Unable to create storage component directory.", e);
+        }
+
+        return path;
+    }
+
     private boolean deleteContent(@NotNull Path atPath) throws ContentException {
         if (Files.exists(atPath)) {
             try {
@@ -155,7 +172,7 @@ public class FileSystemDocumentStore implements DocumentStore {
 
     private void storeDocument(Document document, URL content) {
         // Write the document into the store.
-        Path docPath = this.documentPath(document);
+        Path docPath = this.componentPath(document, DOCUMENT_COMPONENT);
         logger.debug("Writing document to store at location '{}'.", docPath);
 
         try (BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(docPath.toFile()))) {
@@ -173,8 +190,7 @@ public class FileSystemDocumentStore implements DocumentStore {
     }
 
     private void storeThumbnail(Document document, BufferedImage thumbnail) {
-        // Write the document into the store.
-        Path thumbnailPath = this.thumbnailPath(document);
+        Path thumbnailPath = this.componentPath(document, THUMBNAIL_COMPONENT);
         logger.debug("Writing thumbnail to store at location '{}'.", thumbnailPath);
 
         try {
@@ -184,11 +200,30 @@ public class FileSystemDocumentStore implements DocumentStore {
         }
     }
 
-    private Path documentPath(Document document) {
-        return this.documentRoot.resolve(document.getFingerPrint().toLowerCase() + "-doc.pdf");
+    private void storeText(Document document, String content) {
+        Path contentPath = this.componentPath(document, TEXT_COMPONENT);
+        logger.debug("Writing content to store at location '{}'.", contentPath);
+
+        try (GZIPOutputStream out = new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(contentPath.toFile())))) {
+            try (InputStream in = new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8))) {
+                in.transferTo(out);
+                out.flush();
+            }
+        } catch (Exception e) {
+            throw new ContentException("Unable to write document with fingerprint '" + document.getFingerPrint() +
+                    "' to content store.", e);
+        }
     }
 
-    private Path thumbnailPath(Document document) {
-        return this.thumbnailRoot.resolve(document.getFingerPrint().toLowerCase() + "-tmb.png");
+    private Path componentPath(Document document, String component) {
+        return switch (component) {
+            case DOCUMENT_COMPONENT -> this.documentRoot.resolve(document.getFingerPrint().toLowerCase() +
+                    DOCUMENT_COMPONENT_EXTENSION);
+            case THUMBNAIL_COMPONENT -> this.thumbnailRoot.resolve(document.getFingerPrint().toLowerCase() +
+                    THUMBNAIL_COMPONENT_EXTENSION);
+            case TEXT_COMPONENT -> this.textRoot.resolve(document.getFingerPrint().toLowerCase() +
+                    TEXT_COMPONENT_EXTENSION);
+            default -> throw new ContentException("Unknown repository component '" + component + ".");
+        };
     }
 }

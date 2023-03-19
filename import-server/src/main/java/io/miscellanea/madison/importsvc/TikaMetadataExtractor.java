@@ -19,7 +19,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 
 public class TikaMetadataExtractor implements MetadataExtractor {
     // Fields
@@ -37,39 +39,43 @@ public class TikaMetadataExtractor implements MetadataExtractor {
 
     // MetadataExtractionService
     @Override
-    public Document fromStream(String fingerprint, InputStream documentStream) throws ContentException {
-        if (documentStream == null) {
-            throw new IllegalArgumentException("documentStream must not be null.");
+    public Document extract(String fingerprint, URL documentURL) throws ContentException {
+        if (documentURL == null) {
+            throw new IllegalArgumentException("documentURL must not be null.");
         }
 
         String tikaUrl = String.format("%s/meta/form", this.config.tikaUrl());
         logger.debug("Tika metadata URL = {}.", tikaUrl);
 
-        WebTarget target = this.client.target(tikaUrl);
-        var mdo = new MultipartFormDataOutput();
-        mdo.addFormData("upload", documentStream, MediaType.APPLICATION_OCTET_STREAM_TYPE);
-        var entity = new GenericEntity<MultipartFormDataOutput>(mdo) {
-        };
+        try (InputStream documentStream = documentURL.openStream()) {
+            WebTarget target = this.client.target(tikaUrl);
+            var mdo = new MultipartFormDataOutput();
+            mdo.addFormData("upload", documentStream, MediaType.APPLICATION_OCTET_STREAM_TYPE);
+            var entity = new GenericEntity<>(mdo) {
+            };
 
-        logger.debug("Posting document to Tika server at {}.", tikaUrl);
-        try (Response response = target.request().header("Accept", MediaType.APPLICATION_JSON)
-                .post(Entity.entity(entity, MediaType.MULTIPART_FORM_DATA_TYPE))) {
-            if (response.getStatus() == HttpStatus.SC_OK) {
-                logger.debug("Received OK response from Tika.");
-                if (response.hasEntity()) {
-                    String jsonResponse = response.readEntity(String.class);
-                    ObjectMapper mapper = new ObjectMapper();
-                    JsonNode json = mapper.readTree(jsonResponse);
+            logger.debug("Posting document to Tika server at {}.", tikaUrl);
+            try (Response response = target.request().header("Accept", MediaType.APPLICATION_JSON)
+                    .post(Entity.entity(entity, MediaType.MULTIPART_FORM_DATA_TYPE))) {
+                if (response.getStatus() == HttpStatus.SC_OK) {
+                    logger.debug("Received OK response from Tika.");
+                    if (response.hasEntity()) {
+                        String jsonResponse = response.readEntity(String.class);
+                        ObjectMapper mapper = new ObjectMapper();
+                        JsonNode json = mapper.readTree(jsonResponse);
 
-                    return this.createDocumentFromMetadata(fingerprint, json);
+                        return this.createDocumentFromMetadata(fingerprint, json);
+                    } else {
+                        throw new ContentException("Tika did not provide metatdata.");
+                    }
                 } else {
-                    throw new ContentException("Tika did not provide metatdata.");
+                    throw new ContentException("Tika was unable to extract document metadata (SC = " + response.getStatus() + ").");
                 }
-            } else {
-                throw new ContentException("Tika was unable to extract document metadata (SC = " + response.getStatus() + ").");
+            } catch (Exception e) {
+                throw new ContentException("Unable to parse response from Tika server.", e);
             }
-        } catch (Exception e) {
-            throw new ContentException("Unable to parse response from Tika server.", e);
+        } catch (IOException ioException) {
+            throw new ContentException("Unable to open content stream from URL.", ioException);
         }
     }
 

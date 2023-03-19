@@ -26,10 +26,11 @@ public class ImportServerModule extends AbstractModule {
     protected void configure() {
         bind(EventService.class).to(RedisEventService.class);
         bind(FingerprintGenerator.class).to(SHA256FingerprintGenerator.class);
-        bind(DocumentStore.class).to(FileSystemDocumentStore.class);
+        bind(DocumentStore.class).to(FileSystemDocumentStore.class).asEagerSingleton();
         bind(MetadataExtractor.class).to(TikaMetadataExtractor.class);
         bind(DocumentRepository.class).to(JooqDocumentRepository.class);
         bind(ThumbnailGenerator.class).to(PdfBoxThumbnailGenerator.class);
+        bind(ContentExtractor.class).to(TikaContentExtractor.class);
     }
 
     // Producer methods
@@ -43,7 +44,7 @@ public class ImportServerModule extends AbstractModule {
     }
 
     @Inject
-    @ContentRoot
+    @StorageRoot
     @Provides
     public String provideContentRoot(ImportServerConfig config) {
         return config.contentDir();

@@ -22,8 +22,8 @@ public class PdfBoxThumbnailGenerator implements ThumbnailGenerator {
 
     // ThumbnailGenerator
     @Override
-    public BufferedImage generate(URL documentUrl) {
-        BufferedImage thumbnail = null;
+    public BufferedImage generate(String fingerprint, URL documentUrl) {
+        BufferedImage thumbnail;
 
         try (InputStream in = documentUrl.openStream()) {
             PDDocument doc = PDDocument.load(in);
