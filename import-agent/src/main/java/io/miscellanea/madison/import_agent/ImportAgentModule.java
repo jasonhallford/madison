@@ -10,6 +10,8 @@ import io.miscellanea.madison.content.*;
 import io.miscellanea.madison.broker.redis.RedisEventService;
 import io.miscellanea.madison.broker.EventService;
 import io.miscellanea.madison.dal.repository.JooqDocumentRepository;
+import io.miscellanea.madison.document.FingerprintGenerator;
+import io.miscellanea.madison.document.SHA256FingerprintGenerator;
 import io.miscellanea.madison.repository.DocumentRepository;
 import jakarta.ws.rs.client.ClientBuilder;
 import org.jboss.resteasy.client.jaxrs.ResteasyClient;

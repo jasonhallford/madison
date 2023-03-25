@@ -3,6 +3,7 @@ package io.miscellanea.madison.import_agent;
 import io.miscellanea.madison.content.*;
 import io.miscellanea.madison.entity.Document;
 import io.miscellanea.madison.broker.EventService;
+import io.miscellanea.madison.document.FingerprintGenerator;
 import io.miscellanea.madison.repository.DocumentRepository;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;

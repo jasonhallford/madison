@@ -1,9 +1,9 @@
 package io.miscellanea.madison.api.storage;
 
-import io.miscellanea.madison.broker.Event;
 import io.miscellanea.madison.broker.EventService;
-import io.miscellanea.madison.broker.ImportMessage;
-import io.miscellanea.madison.content.DocumentStore;
+import io.miscellanea.madison.document.DocumentStore;
+import io.miscellanea.madison.document.Fingerprint;
+import io.miscellanea.madison.document.Status;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
@@ -16,8 +16,13 @@ import io.vertx.ext.web.handler.BodyHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.imageio.ImageIO;
 import javax.inject.Inject;
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 
 public class StoreApiVertical extends AbstractVerticle {
@@ -65,11 +70,14 @@ public class StoreApiVertical extends AbstractVerticle {
 
     private void configureRoutes(Router router) {
         // Register the body handler so we may access form data later on.
-        router.route().handler(BodyHandler.create(this.storeApiConfig.uploadDirectory()));
+        router.route().handler(BodyHandler.create(this.storeApiConfig.uploadDirectory())
+                .setDeleteUploadedFilesOnEnd(true));
 
         // Bind import endpoints
-        router.post("/api/content/import/scan").handler(this::handleImportScan);
-        router.post("/api/import").handler(this::handleImport);
+        router.put("/api/sources/:fingerprint").handler(this::putSource);
+        router.put("/api/thumbnails/:fingerprint").handler(this::putThumbnail);
+        router.put("/api/texts/:fingerprint").handler(this::putText);
+        router.get("/api/status/:fingerprint").handler(this::getStatus);
 
         // Create the default handler (which will return a bad request code).
         router.route().handler(ctx -> {
@@ -81,59 +89,162 @@ public class StoreApiVertical extends AbstractVerticle {
         logger.debug("API routes successfully configured.");
     }
 
-    private void handleImportScan(RoutingContext ctx) {
-        logger.debug("Handling request to notify import service.");
+    private void getStatus(RoutingContext ctx) {
+        try {
+            Fingerprint fingerprint = new Fingerprint(ctx.pathParam("fingerprint"));
+            logger.debug("Processing GET status for source {}.", fingerprint);
 
-        Event event = new Event(Event.Type.IMPORT_SCAN);
+            vertx.executeBlocking(promise -> {
+                try {
+                    var status = this.documentStore.status(fingerprint);
+                    promise.complete(status);
+                } catch (Exception e) {
+                    promise.fail(e);
+                }
+            }, result -> {
+                if (result.succeeded()) {
+                    Status status = (Status) result.result();
+                    logger.debug("Retrieved status for {}: {}.", fingerprint, status);
 
-        // Dispatch the event to the event service. We execute this as blocking code because we have no guarantee
-        // that the underlying implementation won't use blocking calls.
-        vertx.executeBlocking(promise -> {
-            logger.debug("Dispatching event '{}' to the event service.", event.toString());
-            try {
-                this.eventService.publish(event);
-                logger.debug("Event successfully published.");
-                promise.complete();
-            } catch (Exception e) {
-                logger.error("An error occurred while publishing event.", e);
-                promise.fail(e);
-            }
-        }, result -> {
-            if (result.succeeded()) {
-                ctx.response().setStatusCode(HttpResponseStatus.OK.code()).end();
-            } else {
-                ctx.response().setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code()).end();
-            }
-        });
+                    ctx.json(status);
+                    ctx.response().setStatusCode(HttpResponseStatus.OK.code()).end();
+                } else {
+                    logger.error("Failed to store source for " + fingerprint + ".", result.cause());
+                    ctx.response().setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code()).end();
+                }
+            });
+        } catch (IllegalArgumentException e) {
+            logger.error("BAD REQUEST: {} is not a valid document fingerprint.", ctx.pathParam("fingerprint"));
+            ctx.response().setStatusCode(HttpResponseStatus.BAD_REQUEST.code()).end();
+        }
     }
 
-    private void handleImport(RoutingContext ctx) {
-        logger.debug("Handling request to import document.");
+    private void putSource(RoutingContext ctx) {
+        try {
+            Fingerprint fingerprint = new Fingerprint(ctx.pathParam("fingerprint"));
+            logger.debug("Processing PUT for source {}.", fingerprint);
 
-        List<FileUpload> uploads = ctx.fileUploads();
-        if (uploads.size() > 0) {
-            try {
+            List<FileUpload> uploads = ctx.fileUploads();
+            if (uploads.size() > 0) {
+                try {
+                    URL docUrl = new File(uploads.get(0).uploadedFileName()).toURI().toURL();
+
+                    vertx.executeBlocking(promise -> {
+                        try {
+                            this.documentStore.storeSource(fingerprint, docUrl);
+                            promise.complete();
+                        } catch (Exception e) {
+                            promise.fail(e);
+                        }
+                    }, result -> {
+                        if (result.succeeded()) {
+                            logger.debug("Source successfully stored for {}.", fingerprint);
+                            ctx.response().setStatusCode(HttpResponseStatus.ACCEPTED.code()).end();
+                        } else {
+                            logger.error("Failed to store source for " + fingerprint + ".", result.cause());
+                            ctx.response().setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code()).end();
+                        }
+                    });
+                } catch (Exception e) {
+                    logger.error("Unable to create source URL for " + fingerprint + ".", e);
+                    ctx.response().setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code()).end();
+                }
+            } else {
+                // This is a bad request if the post doesn't contain a file.
+                ctx.response().setStatusCode(HttpResponseStatus.BAD_REQUEST.code()).end();
+            }
+        } catch (IllegalArgumentException e) {
+            logger.error("BAD REQUEST: {} is not a valid document fingerprint.", ctx.pathParam("fingerprint"));
+            ctx.response().setStatusCode(HttpResponseStatus.BAD_REQUEST.code()).end();
+        }
+    }
+
+    private void putThumbnail(RoutingContext ctx) {
+        try {
+            Fingerprint fingerprint = new Fingerprint(ctx.pathParam("fingerprint"));
+            logger.debug("Processing PUT for thumbnail {}.", fingerprint);
+
+            List<FileUpload> uploads = ctx.fileUploads();
+            if (uploads.size() > 0) {
+                try {
+                    String uploadPath = uploads.get(0).uploadedFileName();
+                    URL imageURL = new File(uploadPath).toURI().toURL();
+
+                    vertx.executeBlocking(promise -> {
+                        try {
+                            BufferedImage image = ImageIO.read(imageURL);
+                            this.documentStore.storeThumbnail(fingerprint, image);
+                            promise.complete();
+                        } catch (Exception e) {
+                            promise.fail(e);
+                        }
+                    }, result -> {
+                        if (result.succeeded()) {
+                            logger.debug("Successfully stored thumbnail for {}.", fingerprint);
+                            ctx.response().setStatusCode(HttpResponseStatus.ACCEPTED.code()).end();
+                        } else {
+                            logger.error("Failed to store thumbnail for " + fingerprint + ".", result.cause());
+                            ctx.response().setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code()).end();
+                        }
+
+                        try {
+                            Files.delete(Path.of(uploadPath));
+                        } catch (Exception e) {
+                            logger.error("Unable to delete temporary thumbnail file at " + uploadPath + ".", e);
+                        }
+                    });
+                } catch (Exception e) {
+                    logger.error("Unable to create thumbnail URL for " + fingerprint + ".", e);
+                    ctx.response().setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code()).end();
+                }
+            } else {
+                // This is a bad request if the post doesn't contain a file.
+                ctx.response().setStatusCode(HttpResponseStatus.BAD_REQUEST.code()).end();
+            }
+        } catch (IllegalArgumentException e) {
+            logger.error("BAD REQUEST: {} is not a valid document fingerprint.", ctx.pathParam("fingerprint"));
+            ctx.response().setStatusCode(HttpResponseStatus.BAD_REQUEST.code()).end();
+        }
+    }
+
+    private void putText(RoutingContext ctx) {
+        try {
+            Fingerprint fingerprint = new Fingerprint(ctx.pathParam("fingerprint"));
+            logger.debug("Processing PUT for text {}.", fingerprint);
+
+            List<FileUpload> uploads = ctx.fileUploads();
+            if (uploads.size() > 0) {
                 String uploadPath = uploads.get(0).uploadedFileName();
-                String docUrl = new File(uploadPath).toURI().toURL().toExternalForm();
-                ImportMessage message = new ImportMessage("catalog-api", docUrl);
 
                 vertx.executeBlocking(promise -> {
-                    promise.complete();
+                    try {
+                        String text = Files.readString(Path.of(uploadPath));
+                        this.documentStore.storeText(fingerprint, text);
+                        promise.complete();
+                    } catch (Exception e) {
+                        promise.fail(e);
+                    }
                 }, result -> {
                     if (result.succeeded()) {
-                        logger.debug("Successfully dispatched import message for file {}.", docUrl);
+                        logger.debug("Successfully stored text for {}.", fingerprint);
                         ctx.response().setStatusCode(HttpResponseStatus.OK.code()).end();
                     } else {
-                        logger.error("Unable to dispatch import message.", result.cause());
+                        logger.error("Failed to store text for " + fingerprint + ".", result.cause());
                         ctx.response().setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code()).end();
                     }
+
+                    try {
+                        Files.delete(Path.of(uploadPath));
+                    } catch (Exception e) {
+                        logger.error("Unable to delete temporary text file at " + uploadPath + ".", e);
+                    }
                 });
-            } catch (Exception e) {
-                logger.error("Unable to dispatch import message.", e);
-                ctx.response().setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code()).end();
+            } else {
+                // This is a bad request if the post doesn't contain a file.
+                ctx.response().setStatusCode(HttpResponseStatus.BAD_REQUEST.code()).end();
             }
-        } else {
-            // This is a bad request if the post doesn't contain a file.
+        } catch (IllegalArgumentException e) {
+            logger.error("BAD REQUEST: {} is not a valid document fingerprint.", ctx.pathParam("fingerprint"));
             ctx.response().setStatusCode(HttpResponseStatus.BAD_REQUEST.code()).end();
         }
     }

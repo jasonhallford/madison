@@ -5,7 +5,7 @@ import org.apache.commons.configuration2.CompositeConfiguration;
 
 public class StoreApiConfigModule extends ConfigModule<StoreApiConfig> {
     public StoreApiConfigModule() {
-        super("/config/catalog-api.properties");
+        super("/config/store-api.properties");
     }
 
     @Override

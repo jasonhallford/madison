@@ -1,4 +1,4 @@
-package io.miscellanea.madison.content;
+package io.miscellanea.madison.document;
 
 import io.miscellanea.madison.service.ServiceException;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -36,9 +36,7 @@ public class SHA256FingerprintGenerator implements FingerprintGenerator {
             throw new IllegalArgumentException("bytes must not be null.");
         }
 
-        String id = DigestUtils.sha256Hex(bytes);
-
-        return id;
+        return DigestUtils.sha256Hex(bytes);
     }
 
     @Override

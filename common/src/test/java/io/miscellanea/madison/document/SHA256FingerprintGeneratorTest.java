@@ -1,4 +1,4 @@
-package io.miscellanea.madison.content;
+package io.miscellanea.madison.document;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

@@ -1,5 +1,6 @@
-package io.miscellanea.madison.content;
+package io.miscellanea.madison.document;
 
+import io.miscellanea.madison.content.ContentException;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
