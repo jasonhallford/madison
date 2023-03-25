@@ -13,9 +13,10 @@
         <module>catalog-api</module>
         <module>schema-migration-tool</module>
         <module>common</module>
-        <module>import-server</module>
+        <module>import-agent</module>
         <module>data-access</module>
         <module>redis-broker</module>
+        <module>store-api</module>
     </modules>
 
     <properties>
