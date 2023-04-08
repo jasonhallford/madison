@@ -1,12 +1,6 @@
 package io.miscellanea.madison.content;
 
 import io.miscellanea.madison.entity.Document;
-import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.imageio.ImageIO;
-import javax.inject.Inject;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.MalformedURLException;
@@ -16,6 +10,11 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.util.zip.GZIPOutputStream;
+import javax.imageio.ImageIO;
+import javax.inject.Inject;
+import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class FileSystemDocumentStore implements DocumentStore {
     // Fields
@@ -55,7 +54,7 @@ public class FileSystemDocumentStore implements DocumentStore {
     // DocumentStore
     @Override
     public URL sourceURL(@NotNull Document document) throws ContentException {
-        logger.debug("Looking for source for document with fingerprint '{}'.", document.getFingerPrint());
+        logger.debug("Looking for source for document with fingerprint '{}'.", document.getFingerprint());
         Path docPath = this.componentPath(document, DOCUMENT_COMPONENT);
 
         return getContentUrl(document, docPath);
@@ -63,7 +62,7 @@ public class FileSystemDocumentStore implements DocumentStore {
 
     @Override
     public URL thumbnailURL(@NotNull Document document) throws ContentException {
-        logger.debug("Looking for thumbnail for document with fingerprint '{}'.", document.getFingerPrint());
+        logger.debug("Looking for thumbnail for document with fingerprint '{}'.", document.getFingerprint());
         Path thumbnailPath = this.componentPath(document, THUMBNAIL_COMPONENT);
 
         return getContentUrl(document, thumbnailPath);
@@ -71,7 +70,7 @@ public class FileSystemDocumentStore implements DocumentStore {
 
     @Override
     public URL textURL(@NotNull Document document) throws ContentException {
-        logger.debug("Looking for text for document with fingerprint '{}'.", document.getFingerPrint());
+        logger.debug("Looking for text for document with fingerprint '{}'.", document.getFingerprint());
         Path textPath = this.componentPath(document, TEXT_COMPONENT);
 
         return getContentUrl(document, textPath);
@@ -80,12 +79,12 @@ public class FileSystemDocumentStore implements DocumentStore {
     @Override
     public synchronized void store(@NotNull Document document, BufferedImage thumbnail, String content, URL source) throws ContentException {
         logger.debug("Processing request to store document at {} with fingerprint {}.", source.toExternalForm(),
-                document.getFingerPrint());
+                document.getFingerprint());
 
         // Do not overwrite an existing document, just log a warning.
         if (this.exists(document)) {
             logger.warn("A document with fingerprint {} already exists in the store and will not be overwritten.",
-                    document.getFingerPrint());
+                    document.getFingerprint());
         } else {
             this.storeDocument(document, source);
             this.storeThumbnail(document, thumbnail);
@@ -106,7 +105,7 @@ public class FileSystemDocumentStore implements DocumentStore {
                 deleted = this.deleteContent(this.componentPath(document, TEXT_COMPONENT));
             }
         } catch (Exception e) {
-            logger.error("Unable to delete document with fingerprint " + document.getFingerPrint() +
+            logger.error("Unable to delete document with fingerprint " + document.getFingerprint() +
                     "; returning false.", e);
         }
 
@@ -116,7 +115,7 @@ public class FileSystemDocumentStore implements DocumentStore {
     @Override
     public synchronized boolean exists(@NotNull Document document) {
         boolean exists = Files.exists(this.componentPath(document, DOCUMENT_COMPONENT));
-        logger.debug("Document fingerprint {} exist: {}", document.getFingerPrint(), exists);
+        logger.debug("Document fingerprint {} exist: {}", document.getFingerprint(), exists);
 
         return exists;
     }
@@ -157,14 +156,14 @@ public class FileSystemDocumentStore implements DocumentStore {
         if (this.exists(document)) {
             try {
                 contentUrl = contentPath.toUri().toURL();
-                logger.debug("URL for content with document fingerprint '{}' is '{}'.", document.getFingerPrint(),
+                logger.debug("URL for content with document fingerprint '{}' is '{}'.", document.getFingerprint(),
                         contentUrl.toExternalForm());
             } catch (MalformedURLException e) {
                 throw new ContentException("Unable to create URL for content with document fingerprint '" +
-                        document.getFingerPrint() + "'.", e);
+                        document.getFingerprint() + "'.", e);
             }
         } else {
-            logger.warn("Unable to find content for document with fingerprint '{}'.", document.getFingerPrint());
+            logger.warn("Unable to find content for document with fingerprint '{}'.", document.getFingerprint());
         }
 
         return contentUrl;
@@ -181,12 +180,12 @@ public class FileSystemDocumentStore implements DocumentStore {
                 out.flush();
             }
         } catch (Exception e) {
-            throw new ContentException("Unable to write document with fingerprint '" + document.getFingerPrint() +
+            throw new ContentException("Unable to write document with fingerprint '" + document.getFingerprint() +
                     "' to content store.", e);
         }
 
         logger.info("Document with fingerprint '{}' written to content store at location '{}'.",
-                document.getFingerPrint(), docPath);
+                document.getFingerprint(), docPath);
     }
 
     private void storeThumbnail(Document document, BufferedImage thumbnail) {
@@ -210,18 +209,18 @@ public class FileSystemDocumentStore implements DocumentStore {
                 out.flush();
             }
         } catch (Exception e) {
-            throw new ContentException("Unable to write document with fingerprint '" + document.getFingerPrint() +
+            throw new ContentException("Unable to write document with fingerprint '" + document.getFingerprint() +
                     "' to content store.", e);
         }
     }
 
     private Path componentPath(Document document, String component) {
         return switch (component) {
-            case DOCUMENT_COMPONENT -> this.documentRoot.resolve(document.getFingerPrint().toLowerCase() +
+            case DOCUMENT_COMPONENT -> this.documentRoot.resolve(document.getFingerprint().toLowerCase() +
                     DOCUMENT_COMPONENT_EXTENSION);
-            case THUMBNAIL_COMPONENT -> this.thumbnailRoot.resolve(document.getFingerPrint().toLowerCase() +
+            case THUMBNAIL_COMPONENT -> this.thumbnailRoot.resolve(document.getFingerprint().toLowerCase() +
                     THUMBNAIL_COMPONENT_EXTENSION);
-            case TEXT_COMPONENT -> this.textRoot.resolve(document.getFingerPrint().toLowerCase() +
+            case TEXT_COMPONENT -> this.textRoot.resolve(document.getFingerprint().toLowerCase() +
                     TEXT_COMPONENT_EXTENSION);
             default -> throw new ContentException("Unknown repository component '" + component + ".");
         };

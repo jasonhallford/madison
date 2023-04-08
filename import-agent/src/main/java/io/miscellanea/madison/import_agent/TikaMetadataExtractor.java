@@ -11,17 +11,16 @@ import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.GenericEntity;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import javax.inject.Inject;
 import org.apache.http.HttpStatus;
 import org.jboss.resteasy.client.jaxrs.ResteasyClient;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataOutput;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.inject.Inject;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
 
 public class TikaMetadataExtractor implements MetadataExtractor {
     // Fields
@@ -87,10 +86,16 @@ public class TikaMetadataExtractor implements MetadataExtractor {
         String contentType = metadata.get("Content-Type").asText();
         logger.debug("Document content type: {}", contentType);
 
-        String title = metadata.get("dc:title").asText();
+        String title = "[unknown]";
+        if(metadata.hasNonNull("dc:title")) {
+            title = metadata.get("dc:title").asText();
+        }
         logger.debug("Document title: {}", title);
 
-        String author = metadata.get("dc:creator").asText();
+        String author = "[unknown]";
+        if(metadata.hasNonNull("dc:creator")) {
+            author = metadata.get("dc:creator").asText();
+        }
         logger.debug("Author(s): {}", author);
 
         return new Document(null, title, fingerprint, pageCount, contentType, null, null,

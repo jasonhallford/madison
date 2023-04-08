@@ -9,12 +9,11 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import io.miscellanea.madison.dal.config.DataSourceConfig;
 import io.miscellanea.madison.dal.config.DatabaseConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
+import javax.sql.DataSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DataSourceModule extends AbstractModule {
     // Fields

@@ -1,15 +1,14 @@
 package io.miscellanea.madison.entity;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import org.jetbrains.annotations.NotNull;
 
 public class Document extends AbstractEntity {
     // Fields
     private String title;
-    private String fingerPrint;
+    private String fingerprint;
     private int pageCount;
     private String contentType;
     private List<Author> authors;
@@ -20,16 +19,16 @@ public class Document extends AbstractEntity {
     public Document() {
     }
 
-    public Document(@NotNull String fingerPrint, @NotNull String contentType) {
-        this(null, null, fingerPrint, 0, contentType, null, null, null);
+    public Document(@NotNull String fingerprint, @NotNull String contentType) {
+        this(null, null, fingerprint, 0, contentType, null, null, null);
     }
 
-    public Document(Long id, String title, @NotNull String fingerPrint, int pageCount,
+    public Document(Long id, String title, @NotNull String fingerprint, int pageCount,
                     @NotNull String contentType, String isbn10, String isbn13, List<Author> authors) {
         super(id);
 
         this.title = title;
-        this.fingerPrint = fingerPrint;
+        this.fingerprint = fingerprint;
         this.pageCount = pageCount;
         this.contentType = contentType;
         this.isbn10 = isbn10;
@@ -70,12 +69,12 @@ public class Document extends AbstractEntity {
         this.title = title;
     }
 
-    public String getFingerPrint() {
-        return fingerPrint;
+    public String getFingerprint() {
+        return fingerprint;
     }
 
-    public void setFingerPrint(String fingerPrint) {
-        this.fingerPrint = fingerPrint;
+    public void setFingerprint(String fingerPrint) {
+        this.fingerprint = fingerPrint;
     }
 
     public int getPageCount() {
@@ -102,13 +101,13 @@ public class Document extends AbstractEntity {
         if (!super.equals(o)) return false;
         Document document = (Document) o;
         return pageCount == document.pageCount && title.equals(document.title) &&
-                fingerPrint.equals(document.fingerPrint) && contentType.equals(document.contentType) &&
+                fingerprint.equals(document.fingerprint) && contentType.equals(document.contentType) &&
                 Objects.equals(authors, document.authors) && Objects.equals(isbn10, document.isbn10) &&
                 Objects.equals(isbn13, document.isbn13);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), title, fingerPrint, pageCount, contentType, authors, isbn10, isbn13);
+        return Objects.hash(super.hashCode(), title, fingerprint, pageCount, contentType, authors, isbn10, isbn13);
     }
 }

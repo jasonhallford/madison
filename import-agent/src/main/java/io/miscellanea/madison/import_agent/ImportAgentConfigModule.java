@@ -13,6 +13,7 @@ public class ImportAgentConfigModule extends ConfigModule<ImportAgentConfig> {
         return new ImportAgentConfig(configuration.getString("import.dir"),
                 configuration.getString("import.content.dir"),
                 configuration.getInt("import.task-pool-size"), configuration.getString("import.tika-url"),
+                configuration.getString("import.storage-url"),
                 configuration.getBoolean("import.delete-after-store"));
     }
 }

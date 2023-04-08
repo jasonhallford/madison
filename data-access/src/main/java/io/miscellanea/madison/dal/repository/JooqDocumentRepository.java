@@ -1,5 +1,9 @@
 package io.miscellanea.madison.dal.repository;
 
+import static io.miscellanea.madison.dal.jooq.Tables.AUTHOR;
+import static io.miscellanea.madison.dal.jooq.Tables.AUTHOR_DOCUMENT;
+import static io.miscellanea.madison.dal.jooq.tables.Document.DOCUMENT;
+
 import io.miscellanea.madison.dal.jooq.tables.records.AuthorDocumentRecord;
 import io.miscellanea.madison.dal.jooq.tables.records.AuthorRecord;
 import io.miscellanea.madison.dal.jooq.tables.records.DocumentRecord;
@@ -7,21 +11,15 @@ import io.miscellanea.madison.entity.Author;
 import io.miscellanea.madison.entity.Document;
 import io.miscellanea.madison.repository.DocumentRepository;
 import io.miscellanea.madison.repository.RepositoryException;
+import java.sql.Connection;
+import java.util.List;
+import javax.inject.Inject;
 import org.jetbrains.annotations.NotNull;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
-
-import static io.miscellanea.madison.dal.jooq.Tables.AUTHOR;
-import static io.miscellanea.madison.dal.jooq.Tables.AUTHOR_DOCUMENT;
-import static io.miscellanea.madison.dal.jooq.tables.Document.DOCUMENT;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.inject.Inject;
-import java.sql.Connection;
-import java.util.List;
 
 public class JooqDocumentRepository implements DocumentRepository {
     // Fields
@@ -58,12 +56,12 @@ public class JooqDocumentRepository implements DocumentRepository {
         create.transaction(trx -> {
             // Does the document already exist? If so, then we don't need to add it to the database.
             DocumentRecord documentRecord = trx.dsl().selectFrom(DOCUMENT)
-                    .where(DOCUMENT.FINGERPRINT.eq(document.getFingerPrint())).fetchOne();
+                    .where(DOCUMENT.FINGERPRINT.eq(document.getFingerprint())).fetchOne();
             if (documentRecord == null) {
-                logger.debug("INSERTing document with fingerprint {} into database.", document.getFingerPrint());
+                logger.debug("INSERTing document with fingerprint {} into database.", document.getFingerprint());
                 documentRecord = trx.dsl().insertInto(DOCUMENT)
                         .set(DOCUMENT.CONTENT_TYPE, document.getContentType())
-                        .set(DOCUMENT.FINGERPRINT, document.getFingerPrint())
+                        .set(DOCUMENT.FINGERPRINT, document.getFingerprint())
                         .set(DOCUMENT.PAGE_COUNT, document.getPageCount())
                         .set(DOCUMENT.TITLE, document.getTitle())
                         .set(DOCUMENT.ISBN10, document.getIsbn10())
@@ -72,7 +70,7 @@ public class JooqDocumentRepository implements DocumentRepository {
                         .fetchOne();
 
                 document.setId(documentRecord.getId());
-                logger.debug("Document with fingerprint {} inserted into database with ID {}.", document.getFingerPrint(),
+                logger.debug("Document with fingerprint {} inserted into database with ID {}.", document.getFingerprint(),
                         document.getId());
                 if (document.getAuthors() != null && document.getAuthors().size() > 0) {
                     for (Author author : document.getAuthors()) {
@@ -115,7 +113,7 @@ public class JooqDocumentRepository implements DocumentRepository {
                 }
             } else {
                 logger.warn("A document with fingerprint {} already exists in the collection; ignoring request.",
-                        document.getFingerPrint());
+                        document.getFingerprint());
             }
         });
     }

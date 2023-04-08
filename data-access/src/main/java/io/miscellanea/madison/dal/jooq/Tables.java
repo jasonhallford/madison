@@ -9,7 +9,6 @@ import io.miscellanea.madison.dal.jooq.tables.AuthorDocument;
 import io.miscellanea.madison.dal.jooq.tables.Document;
 import io.miscellanea.madison.dal.jooq.tables.Identifiers;
 
-
 /**
  * Convenience access to all tables in catalog.
  */

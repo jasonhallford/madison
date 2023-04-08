@@ -1,12 +1,11 @@
 package io.miscellanea.madison.document;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.*;
 
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-
-import static org.assertj.core.api.Assertions.*;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 class SHA256FingerprintGeneratorTest {
     @Test

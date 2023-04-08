@@ -5,18 +5,17 @@ import io.miscellanea.madison.broker.BrokerConfig;
 import io.miscellanea.madison.broker.Event;
 import io.miscellanea.madison.broker.EventService;
 import io.miscellanea.madison.service.ServiceException;
-import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPubSub;
-
-import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
+import javax.inject.Inject;
+import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPubSub;
 
 public class RedisEventService implements EventService {
     // Fields

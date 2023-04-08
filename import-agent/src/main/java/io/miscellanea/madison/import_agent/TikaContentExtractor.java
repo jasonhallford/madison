@@ -7,17 +7,16 @@ import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.GenericEntity;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import javax.inject.Inject;
 import org.apache.http.HttpStatus;
 import org.jboss.resteasy.client.jaxrs.ResteasyClient;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataOutput;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.inject.Inject;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
 
 public class TikaContentExtractor implements ContentExtractor {
     // Fields

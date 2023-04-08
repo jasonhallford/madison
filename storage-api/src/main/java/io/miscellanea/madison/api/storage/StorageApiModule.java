@@ -7,10 +7,9 @@ import io.miscellanea.madison.broker.redis.RedisEventService;
 import io.miscellanea.madison.document.DocumentStore;
 import io.miscellanea.madison.document.FileSystemDocumentStore;
 import io.miscellanea.madison.document.StorageRoot;
-
 import javax.inject.Inject;
 
-public class StoreApiModule extends AbstractModule {
+public class StorageApiModule extends AbstractModule {
     @Override
     protected void configure() {
         bind(EventService.class).to(RedisEventService.class);
@@ -21,7 +20,7 @@ public class StoreApiModule extends AbstractModule {
     @Inject
     @StorageRoot
     @Provides
-    public String provideContentRoot(StoreApiConfig config) {
+    public String provideContentRoot(StorageApiConfig config) {
         return config.contentDirectory();
     }
 }

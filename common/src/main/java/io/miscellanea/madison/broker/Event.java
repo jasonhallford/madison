@@ -1,8 +1,7 @@
 package io.miscellanea.madison.broker;
 
-import org.apache.commons.lang3.builder.ToStringBuilder;
-
 import java.util.concurrent.atomic.AtomicLong;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 public class Event {
     // Enum of known types

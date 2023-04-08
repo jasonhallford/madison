@@ -1,9 +1,8 @@
 package io.miscellanea.madison.repository;
 
 import io.miscellanea.madison.entity.Document;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.List;
+import org.jetbrains.annotations.NotNull;
 
 public interface DocumentRepository extends AutoCloseable {
     Document get(@NotNull Long id);

@@ -2,14 +2,13 @@ package io.miscellanea.madison.import_agent;
 
 import io.miscellanea.madison.content.ContentException;
 import io.miscellanea.madison.content.ThumbnailGenerator;
+import java.awt.image.BufferedImage;
+import java.io.InputStream;
+import java.net.URL;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.awt.image.BufferedImage;
-import java.io.InputStream;
-import java.net.URL;
 
 public class PdfBoxThumbnailGenerator implements ThumbnailGenerator {
     // Fields

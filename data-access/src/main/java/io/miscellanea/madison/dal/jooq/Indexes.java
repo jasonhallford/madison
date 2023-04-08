@@ -5,12 +5,10 @@ package io.miscellanea.madison.dal.jooq;
 
 
 import io.miscellanea.madison.dal.jooq.tables.Identifiers;
-
 import org.jooq.Index;
 import org.jooq.OrderField;
 import org.jooq.impl.DSL;
 import org.jooq.impl.Internal;
-
 
 /**
  * A class modelling indexes of tables in catalog.

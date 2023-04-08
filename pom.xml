@@ -16,12 +16,12 @@
         <module>import-agent</module>
         <module>data-access</module>
         <module>redis-broker</module>
-        <module>store-api</module>
+        <module>storage-api</module>
     </modules>
 
     <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.source>20</maven.compiler.source>
+        <maven.compiler.target>20</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <!-- Dependency versions -->

@@ -12,13 +12,11 @@ import io.miscellanea.madison.dal.jooq.tables.records.AuthorDocumentRecord;
 import io.miscellanea.madison.dal.jooq.tables.records.AuthorRecord;
 import io.miscellanea.madison.dal.jooq.tables.records.DocumentRecord;
 import io.miscellanea.madison.dal.jooq.tables.records.IdentifiersRecord;
-
 import org.jooq.ForeignKey;
 import org.jooq.TableField;
 import org.jooq.UniqueKey;
 import org.jooq.impl.DSL;
 import org.jooq.impl.Internal;
-
 
 /**
  * A class modelling foreign key relationships and constraints of tables in

@@ -13,12 +13,11 @@ import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.inject.Inject;
 import java.io.File;
 import java.util.List;
+import javax.inject.Inject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CatalogApiVertical extends AbstractVerticle {
     // Fields

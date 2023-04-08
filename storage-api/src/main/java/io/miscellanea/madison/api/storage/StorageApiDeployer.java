@@ -7,15 +7,15 @@ import io.vertx.core.Vertx;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class StoreApiDeployer {
-    private static final Logger logger = LoggerFactory.getLogger(StoreApiDeployer.class);
+public class StorageApiDeployer {
+    private static final Logger logger = LoggerFactory.getLogger(StorageApiDeployer.class);
 
     public static void main(String[] args) {
         // Create the Guice injector to initialize our dependencies.
         logger.debug("Initializing Guice injector.");
         Injector injector = Guice.createInjector(new BrokerConfigModule(),
-                new StoreApiConfigModule(),
-                new StoreApiModule());
+                new StorageApiConfigModule(),
+                new StorageApiModule());
         logger.debug("Guice injector successfully initialized.");
 
         // Start the service's REST interface.
@@ -23,7 +23,7 @@ public class StoreApiDeployer {
         var vertx = Vertx.vertx();
         logger.debug("Vert.x runtime initialized.");
 
-        var vertical = injector.getInstance(StoreApiVertical.class);
+        var vertical = injector.getInstance(StorageApiVertical.class);
 
         logger.info("Deploying Store API verticle.");
         var response = vertx.deployVerticle(vertical);

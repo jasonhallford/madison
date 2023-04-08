@@ -9,18 +9,17 @@ import io.miscellanea.madison.dal.DataSourceModule;
 import io.miscellanea.madison.dal.config.DataSourceConfigModule;
 import io.miscellanea.madison.dal.config.DatabaseConfigModule;
 import io.miscellanea.madison.entity.Document;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.net.URL;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ImportAgent {
     // Fields
@@ -117,7 +116,7 @@ public class ImportAgent {
             URL docUrl = new URL(importMessage.getDocumentUrl());
 
             var importTask = injector.getInstance(DocumentSupplier.class);
-            importTask.setDocumentUrl(docUrl);
+            importTask.setSourceUrl(docUrl);
 
             logger.debug("Importing document from URL {}.", docUrl.toExternalForm());
             Document document = importTask.get();

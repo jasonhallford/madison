@@ -1,11 +1,10 @@
 package io.miscellanea.madison.document;
 
 import io.miscellanea.madison.service.ServiceException;
-import org.apache.commons.codec.digest.DigestUtils;
-import org.jetbrains.annotations.NotNull;
-
 import java.io.*;
 import java.net.URL;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Generates a unique document identity as a string-encoded SHA256
