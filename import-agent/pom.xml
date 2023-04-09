@@ -32,8 +32,8 @@
 
         <!-- Third party dependencies -->
         <dependency>
-            <groupId>com.google.inject</groupId>
-            <artifactId>guice</artifactId>
+            <groupId>org.jboss.weld.se</groupId>
+            <artifactId>weld-se-core</artifactId>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>

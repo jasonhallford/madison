@@ -23,7 +23,6 @@ public class StorageApiVertical extends AbstractVerticle {
   // Fields
   private static final Logger logger = LoggerFactory.getLogger(StorageApiVertical.class);
 
-  private HttpServer httpServer;
   private final StorageApiConfig storageApiConfig;
   private final EventService eventService;
   private final DocumentStore documentStore;
@@ -45,13 +44,13 @@ public class StorageApiVertical extends AbstractVerticle {
     // Configure the REST endpoint
     logger.debug("Creating HTTP server on port TCP {}.", this.storageApiConfig.port());
     HttpServerOptions opts = new HttpServerOptions().setPort(this.storageApiConfig.port());
-    httpServer = vertx.createHttpServer(opts);
+    HttpServer httpServer = vertx.createHttpServer(opts);
 
     Router router = Router.router(vertx);
     this.configureRoutes(router);
 
     logger.debug("Staring API HTTP REST endpoint.");
-    this.httpServer
+    httpServer
         .requestHandler(router)
         .listen()
         .onSuccess(
@@ -69,7 +68,7 @@ public class StorageApiVertical extends AbstractVerticle {
   }
 
   private void configureRoutes(Router router) {
-    // Register the body handler so we may access form data later on.
+    // Register the body handler so that we may access form data later on.
     router
         .route()
         .handler(

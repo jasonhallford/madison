@@ -24,6 +24,11 @@
             <artifactId>redis-broker</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
+        <dependency>
+            <groupId>io.miscellanea.madison</groupId>
+            <artifactId>data-access</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
 
         <!-- Third party dependencies -->
         <dependency>

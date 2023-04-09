@@ -1,10 +1,12 @@
 package io.miscellanea.madison.import_agent;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.miscellanea.madison.broker.EventService;
 import io.miscellanea.madison.content.*;
 import io.miscellanea.madison.document.FingerprintGenerator;
 import io.miscellanea.madison.entity.Document;
-import io.miscellanea.madison.repository.DocumentRepository;
+import jakarta.inject.Inject;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.MediaType;
@@ -16,7 +18,6 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.function.Supplier;
 import javax.imageio.ImageIO;
-import javax.inject.Inject;
 import org.apache.http.HttpStatus;
 import org.jboss.resteasy.client.jaxrs.ResteasyClient;
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
@@ -24,29 +25,28 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DocumentSupplier implements Supplier<Document> {
+public class DocumentImporter implements Supplier<Document> {
   // Fields
-  private static final Logger logger = LoggerFactory.getLogger(DocumentSupplier.class);
+  private static final Logger logger = LoggerFactory.getLogger(DocumentImporter.class);
 
   private final ImportAgentConfig config;
   private final FingerprintGenerator fingerprintGenerator;
   private final MetadataExtractor metadataExtractor;
   private final ContentExtractor contentExtractor;
   private final EventService eventService;
-  private final DocumentRepository documentRepository;
   private final ThumbnailGenerator thumbnailGenerator;
   private final ResteasyClient resteasyClient;
   private URL sourceUrl;
+  private final ObjectMapper objectMapper;
 
   // Constructors
   @Inject
-  public DocumentSupplier(
+  public DocumentImporter(
       @NotNull ImportAgentConfig config,
       @NotNull FingerprintGenerator fingerprintGenerator,
       @NotNull MetadataExtractor metadataExtractor,
       @NotNull ContentExtractor contentExtractor,
       @NotNull ThumbnailGenerator thumbnailGenerator,
-      @NotNull DocumentRepository documentRepository,
       @NotNull EventService eventService,
       @NotNull ResteasyClient resteasyClient) {
     this.config = config;
@@ -54,9 +54,10 @@ public class DocumentSupplier implements Supplier<Document> {
     this.metadataExtractor = metadataExtractor;
     this.contentExtractor = contentExtractor;
     this.thumbnailGenerator = thumbnailGenerator;
-    this.documentRepository = documentRepository;
     this.eventService = eventService;
     this.resteasyClient = resteasyClient;
+    this.objectMapper = new ObjectMapper();
+    this.objectMapper.registerModule(new JavaTimeModule());
   }
 
   // Properties
@@ -82,7 +83,7 @@ public class DocumentSupplier implements Supplier<Document> {
       String text = this.contentExtractor.extract(fingerprint, sourceUrl);
 
       this.storeContent(document, thumbnail, text);
-      this.documentRepository.add(document);
+      this.updateCatalog(document);
 
       return document;
     } catch (ContentException ce) {
@@ -93,19 +94,49 @@ public class DocumentSupplier implements Supplier<Document> {
               + this.sourceUrl.toExternalForm()
               + ".",
           e);
-    } finally {
-      this.documentRepository.close();
     }
   }
 
   // Private methods
+  private void updateCatalog(Document document) throws ContentException {
+    String targetUrl =
+        String.format("%s/api/document", this.config.catalogUrl(), document.getFingerprint());
+
+    try {
+      WebTarget target = this.resteasyClient.target(targetUrl);
+      if (target instanceof ResteasyWebTarget resteasyWebTarget) {
+        resteasyWebTarget.setChunked(true);
+      }
+
+      logger.debug("POSTing document to catalog API at {}.", targetUrl);
+      String json = this.objectMapper.writeValueAsString(document);
+      try (Response response =
+          target.request().post(Entity.entity(json, MediaType.APPLICATION_JSON_TYPE))) {
+        if (response.getStatus() == HttpStatus.SC_CREATED) {
+          logger.debug("Received CREATED response from Catalog API.");
+        } else {
+          throw new ContentException(
+              "Catalog API rejected content (SC = " + response.getStatus() + ").");
+        }
+      } catch (Exception e) {
+        throw new ContentException("Unable to parse response from Catalog API.", e);
+      }
+    } catch (Exception e) {
+      if (e instanceof ContentException ce) {
+        throw ce;
+      } else {
+        throw new ContentException("Unable to POST document to Catalog API.", e);
+      }
+    }
+  }
+
   private void storeContent(Document document, BufferedImage thumbnail, String text)
       throws ContentException {
     // Step 1: Store the source document
-    String sourceUrl =
+    String targetUrl =
         String.format("%s/api/sources/%s", this.config.storageUrl(), document.getFingerprint());
     try (InputStream sourceStream = this.sourceUrl.openStream()) {
-      this.putDocumentResource(sourceUrl, sourceStream, MediaType.APPLICATION_OCTET_STREAM_TYPE);
+      this.putDocumentResource(targetUrl, sourceStream, MediaType.APPLICATION_OCTET_STREAM_TYPE);
     } catch (Exception e) {
       if (e instanceof ContentException contentException) {
         throw contentException;
@@ -115,7 +146,7 @@ public class DocumentSupplier implements Supplier<Document> {
     }
 
     // Step 2: Store the thumbnail
-    sourceUrl =
+    targetUrl =
         String.format("%s/api/thumbnails/%s", this.config.storageUrl(), document.getFingerprint());
     try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
       ImageIO.write(thumbnail, "png", byteArrayOutputStream);
@@ -123,7 +154,7 @@ public class DocumentSupplier implements Supplier<Document> {
       try (InputStream thumbnailStream =
           new ByteArrayInputStream(byteArrayOutputStream.toByteArray())) {
         this.putDocumentResource(
-            sourceUrl, thumbnailStream, MediaType.APPLICATION_OCTET_STREAM_TYPE);
+            targetUrl, thumbnailStream, MediaType.APPLICATION_OCTET_STREAM_TYPE);
       } catch (Exception e) {
         if (e instanceof ContentException contentException) {
           throw contentException;
@@ -137,10 +168,10 @@ public class DocumentSupplier implements Supplier<Document> {
     }
 
     // Step 1: Store the text
-    sourceUrl =
+    targetUrl =
         String.format("%s/api/texts/%s", this.config.storageUrl(), document.getFingerprint());
     try (InputStream textStream = new ByteArrayInputStream(text.getBytes("UTF-8"))) {
-      this.putDocumentResource(sourceUrl, textStream, MediaType.TEXT_PLAIN_TYPE);
+      this.putDocumentResource(targetUrl, textStream, MediaType.TEXT_PLAIN_TYPE);
     } catch (Exception e) {
       if (e instanceof ContentException contentException) {
         throw contentException;
