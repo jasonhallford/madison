@@ -26,5 +26,5 @@ public interface DocumentRepository extends AutoCloseable {
   int size();
 
   @Override
-  public void close() throws RepositoryException;
+  void close() throws RepositoryException;
 }

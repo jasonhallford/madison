@@ -24,7 +24,7 @@ public class ImportAgentProducer {
   private static final Logger logger = LoggerFactory.getLogger(ImportAgentProducer.class);
   public static final String IMPORT_QUEUE_NAME = "madison.import";
 
-  private BrokerConfig brokerConfig;
+  private final BrokerConfig brokerConfig;
   private EventService eventService;
   private FingerprintGenerator fingerprintGenerator;
   private ResteasyClient resteasyClient;

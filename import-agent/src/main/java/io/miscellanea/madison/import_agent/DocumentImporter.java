@@ -16,6 +16,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.function.Supplier;
 import javax.imageio.ImageIO;
 import org.apache.http.HttpStatus;
@@ -99,8 +100,7 @@ public class DocumentImporter implements Supplier<Document> {
 
   // Private methods
   private void updateCatalog(Document document) throws ContentException {
-    String targetUrl =
-        String.format("%s/api/document", this.config.catalogUrl(), document.getFingerprint());
+    String targetUrl = String.format("%s/api/document", this.config.catalogUrl());
 
     try {
       WebTarget target = this.resteasyClient.target(targetUrl);
@@ -170,7 +170,7 @@ public class DocumentImporter implements Supplier<Document> {
     // Step 1: Store the text
     targetUrl =
         String.format("%s/api/texts/%s", this.config.storageUrl(), document.getFingerprint());
-    try (InputStream textStream = new ByteArrayInputStream(text.getBytes("UTF-8"))) {
+    try (InputStream textStream = new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8))) {
       this.putDocumentResource(targetUrl, textStream, MediaType.TEXT_PLAIN_TYPE);
     } catch (Exception e) {
       if (e instanceof ContentException contentException) {

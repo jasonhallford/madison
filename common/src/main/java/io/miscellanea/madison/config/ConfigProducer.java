@@ -2,7 +2,6 @@ package io.miscellanea.madison.config;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
-
 import org.apache.commons.configuration2.CompositeConfiguration;
 import org.apache.commons.configuration2.EnvironmentConfiguration;
 import org.apache.commons.configuration2.PropertiesConfiguration;
@@ -25,7 +24,7 @@ public abstract class ConfigProducer<T> {
 
   protected abstract T buildCustomConfig(CompositeConfiguration compositeConfiguration);
 
-  protected final T buildConfig() throws ConfigurationException {
+  protected final T buildConfig() throws ConfigException {
     // Read the JVM system properties
     SystemConfiguration systemConfiguration = new SystemConfiguration();
 
@@ -41,11 +40,11 @@ public abstract class ConfigProducer<T> {
           FileHandler handler = new FileHandler(classpathConfig);
           handler.load(reader);
         } catch (ConfigurationException e) {
-          throw new RuntimeException(e);
+          throw new ConfigException("Unable to read configuration file.", e);
         }
       }
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new ConfigException("Unable to read configuration from classpath resource.", e);
     }
 
     // Build a composite configuration to read layered configuration properties
