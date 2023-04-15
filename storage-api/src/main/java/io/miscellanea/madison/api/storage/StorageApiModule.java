@@ -7,6 +7,7 @@ import io.miscellanea.madison.broker.redis.RedisEventService;
 import io.miscellanea.madison.document.DocumentStore;
 import io.miscellanea.madison.document.FileSystemDocumentStore;
 import io.miscellanea.madison.document.StorageRoot;
+
 import javax.inject.Inject;
 
 public class StorageApiModule extends AbstractModule {

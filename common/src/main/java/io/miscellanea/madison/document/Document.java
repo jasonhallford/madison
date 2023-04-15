@@ -2,10 +2,11 @@ package io.miscellanea.madison.document;
 
 import io.miscellanea.madison.entity.AbstractEntity;
 import io.miscellanea.madison.entity.Author;
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import org.jetbrains.annotations.NotNull;
 
 public class Document extends AbstractEntity {
     // Fields

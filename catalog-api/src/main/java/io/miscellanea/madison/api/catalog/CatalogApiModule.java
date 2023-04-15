@@ -10,20 +10,21 @@ import io.miscellanea.madison.broker.redis.RedisEventService;
 import io.miscellanea.madison.broker.redis.RedisQueue;
 import io.miscellanea.madison.dal.repository.JooqDocumentRepository;
 import io.miscellanea.madison.repository.DocumentRepository;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 public class CatalogApiModule extends AbstractModule {
-  @Override
-  protected void configure() {
-    bind(EventService.class).to(RedisEventService.class);
-    bind(DocumentRepository.class).to(JooqDocumentRepository.class);
-  }
+    @Override
+    protected void configure() {
+        bind(EventService.class).to(RedisEventService.class);
+        bind(DocumentRepository.class).to(JooqDocumentRepository.class);
+    }
 
-  @Inject
-  @Provides
-  @Singleton
-  public Queue<ImportMessage> provideImportQueue(BrokerConfig brokerConfig) {
-    return new RedisQueue<>(brokerConfig, "madison.import");
-  }
+    @Inject
+    @Provides
+    @Singleton
+    public Queue<ImportMessage> provideImportQueue(BrokerConfig brokerConfig) {
+        return new RedisQueue<>(brokerConfig, "madison.import");
+    }
 }

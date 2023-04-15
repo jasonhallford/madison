@@ -1,10 +1,11 @@
 package io.miscellanea.madison.document;
 
-import java.util.Objects;
-import java.util.regex.Pattern;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Objects;
+import java.util.regex.Pattern;
 
 public final class Fingerprint {
     // Fields

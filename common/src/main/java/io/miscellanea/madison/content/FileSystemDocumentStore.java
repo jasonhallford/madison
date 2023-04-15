@@ -1,6 +1,12 @@
 package io.miscellanea.madison.content;
 
 import io.miscellanea.madison.entity.Document;
+import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.imageio.ImageIO;
+import javax.inject.Inject;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.MalformedURLException;
@@ -10,11 +16,6 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.util.zip.GZIPOutputStream;
-import javax.imageio.ImageIO;
-import javax.inject.Inject;
-import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class FileSystemDocumentStore implements DocumentStore {
     // Fields

@@ -1,10 +1,11 @@
 package io.miscellanea.madison.document;
 
 import io.miscellanea.madison.content.ContentException;
+import org.jetbrains.annotations.NotNull;
+
 import java.awt.image.BufferedImage;
 import java.io.InputStream;
 import java.net.URL;
-import org.jetbrains.annotations.NotNull;
 
 public interface DocumentStore {
     void storeSource(@NotNull Fingerprint fingerprint, InputStream source) throws ContentException;

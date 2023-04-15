@@ -1,9 +1,10 @@
 package io.miscellanea.madison.content;
 
 import io.miscellanea.madison.entity.Document;
+import org.jetbrains.annotations.NotNull;
+
 import java.awt.image.BufferedImage;
 import java.net.URL;
-import org.jetbrains.annotations.NotNull;
 
 public interface DocumentStore {
     void store(@NotNull Document document, BufferedImage thumbnail, String content, URL source) throws ContentException;

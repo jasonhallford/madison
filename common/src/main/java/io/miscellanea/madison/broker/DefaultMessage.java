@@ -1,8 +1,9 @@
 package io.miscellanea.madison.broker;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.time.LocalDateTime;
 import java.util.Objects;
-import org.jetbrains.annotations.NotNull;
 
 public class DefaultMessage implements Message {
     // Fields

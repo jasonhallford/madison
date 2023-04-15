@@ -6,13 +6,14 @@ import io.miscellanea.madison.broker.BrokerConfig;
 import io.miscellanea.madison.broker.BrokerException;
 import io.miscellanea.madison.broker.Message;
 import io.miscellanea.madison.broker.Queue;
-import java.util.List;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
+
+import java.util.List;
 
 public class RedisQueue<T extends Message> implements Queue<T> {
     // Fields

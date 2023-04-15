@@ -2,9 +2,6 @@ package io.miscellanea.madison.config;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import javax.inject.Singleton;
 import org.apache.commons.configuration2.CompositeConfiguration;
 import org.apache.commons.configuration2.EnvironmentConfiguration;
 import org.apache.commons.configuration2.PropertiesConfiguration;
@@ -14,6 +11,10 @@ import org.apache.commons.configuration2.io.FileHandler;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.inject.Singleton;
+import java.io.IOException;
+import java.io.InputStreamReader;
 
 public abstract class ConfigModule<T> extends AbstractModule {
     private static final Logger logger = LoggerFactory.getLogger(ConfigModule.class);
