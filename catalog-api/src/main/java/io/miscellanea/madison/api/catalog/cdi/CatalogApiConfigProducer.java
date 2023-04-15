@@ -1,5 +1,6 @@
-package io.miscellanea.madison.api.storage;
+package io.miscellanea.madison.api.catalog.cdi;
 
+import io.miscellanea.madison.api.catalog.CatalogApiConfig;
 import io.miscellanea.madison.config.ConfigException;
 import io.miscellanea.madison.config.ConfigProducer;
 import jakarta.annotation.PostConstruct;
@@ -8,19 +9,18 @@ import jakarta.enterprise.inject.Produces;
 import org.apache.commons.configuration2.CompositeConfiguration;
 
 @ApplicationScoped
-public class StorageApiConfigProducer extends ConfigProducer<StorageApiConfig> {
-    private StorageApiConfig config;
+public class CatalogApiConfigProducer extends ConfigProducer<CatalogApiConfig> {
+    private CatalogApiConfig config;
 
-    public StorageApiConfigProducer() {
-        super("/config/storage-api.properties");
+    public CatalogApiConfigProducer() {
+        super("/config/catalog-api.properties");
     }
 
     // ConfigProducer
     @Override
-    protected StorageApiConfig buildCustomConfig(CompositeConfiguration configuration) {
-        return new StorageApiConfig(configuration.getInt("storage.api.port"),
-                configuration.getString("storage.api.content.dir"),
-                configuration.getString("storage.api.upload.dir"));
+    protected CatalogApiConfig buildCustomConfig(CompositeConfiguration configuration) {
+        return new CatalogApiConfig(configuration.getInt("catalog.api.port"),
+                configuration.getString("catalog.api.upload.dir"));
     }
 
     // Producer methods
@@ -34,7 +34,7 @@ public class StorageApiConfigProducer extends ConfigProducer<StorageApiConfig> {
     }
 
     @Produces
-    public StorageApiConfig produce() {
+    public CatalogApiConfig produce() {
         return this.config;
     }
 }

@@ -1,5 +1,6 @@
-package io.miscellanea.madison.api.storage;
+package io.miscellanea.madison.import_agent.cdi;
 
+import io.miscellanea.madison.broker.BrokerConfig;
 import io.miscellanea.madison.config.ConfigException;
 import io.miscellanea.madison.config.ConfigProducer;
 import jakarta.annotation.PostConstruct;
@@ -8,19 +9,22 @@ import jakarta.enterprise.inject.Produces;
 import org.apache.commons.configuration2.CompositeConfiguration;
 
 @ApplicationScoped
-public class StorageApiConfigProducer extends ConfigProducer<StorageApiConfig> {
-    private StorageApiConfig config;
+public class BrokerConfigProducer extends ConfigProducer<BrokerConfig> {
+    private BrokerConfig config;
 
-    public StorageApiConfigProducer() {
-        super("/config/storage-api.properties");
+    public BrokerConfigProducer() {
+        super("/config/broker.properties");
     }
 
     // ConfigProducer
     @Override
-    protected StorageApiConfig buildCustomConfig(CompositeConfiguration configuration) {
-        return new StorageApiConfig(configuration.getInt("storage.api.port"),
-                configuration.getString("storage.api.content.dir"),
-                configuration.getString("storage.api.upload.dir"));
+    protected BrokerConfig buildCustomConfig(CompositeConfiguration configuration) {
+        return new BrokerConfig(
+                configuration.getString("broker.host"),
+                configuration.getInt("broker.port"),
+                configuration.getString("broker.user"),
+                configuration.getString("broker.password"),
+                configuration.getString("broker.topic"));
     }
 
     // Producer methods
@@ -34,7 +38,7 @@ public class StorageApiConfigProducer extends ConfigProducer<StorageApiConfig> {
     }
 
     @Produces
-    public StorageApiConfig produce() {
+    public BrokerConfig produce() {
         return this.config;
     }
 }

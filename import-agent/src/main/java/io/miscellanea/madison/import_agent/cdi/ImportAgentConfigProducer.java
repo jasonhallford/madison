@@ -1,7 +1,8 @@
-package io.miscellanea.madison.import_agent;
+package io.miscellanea.madison.import_agent.cdi;
 
 import io.miscellanea.madison.config.ConfigException;
 import io.miscellanea.madison.config.ConfigProducer;
+import io.miscellanea.madison.import_agent.ImportAgentConfig;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;

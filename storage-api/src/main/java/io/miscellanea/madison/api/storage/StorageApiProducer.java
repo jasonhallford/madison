@@ -20,8 +20,8 @@ public class StorageApiProducer {
 
     private EventService eventService;
     private DocumentStore documentStore;
-    private StorageApiConfig storageApiConfig;
-    private BrokerConfig brokerConfig;
+    private final StorageApiConfig storageApiConfig;
+    private final BrokerConfig brokerConfig;
 
     // Constructors
     @Inject

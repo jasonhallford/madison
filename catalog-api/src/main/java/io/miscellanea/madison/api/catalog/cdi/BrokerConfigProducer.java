@@ -1,4 +1,4 @@
-package io.miscellanea.madison.import_agent;
+package io.miscellanea.madison.api.catalog.cdi;
 
 import io.miscellanea.madison.broker.BrokerConfig;
 import io.miscellanea.madison.config.ConfigException;
