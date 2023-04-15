@@ -34,7 +34,7 @@ public class ImportAgent {
         logger.debug("Initializing Weld CDI container...");
         Weld weld = new Weld();
         WeldContainer cdi = weld.initialize();
-        logger.debug("Weld CDI container successfully initialized.");
+        logger.debug("Weld successfully initialized.");
 
         // Create an executor to manage import taskPoolSize. The underlying pool is closed via
         // the shutdown hook registered at the end of this method.
