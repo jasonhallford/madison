@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPubSub;
 
-import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +30,6 @@ public class RedisEventService implements EventService {
     private Thread subscriber;
 
     // Constructors
-    @Inject
     public RedisEventService(BrokerConfig config) {
         this.config = config;
 

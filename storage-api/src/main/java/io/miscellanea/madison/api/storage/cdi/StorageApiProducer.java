@@ -1,5 +1,6 @@
-package io.miscellanea.madison.api.storage;
+package io.miscellanea.madison.api.storage.cdi;
 
+import io.miscellanea.madison.api.storage.StorageApiConfig;
 import io.miscellanea.madison.broker.BrokerConfig;
 import io.miscellanea.madison.broker.EventService;
 import io.miscellanea.madison.broker.redis.RedisEventService;

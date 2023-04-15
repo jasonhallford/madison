@@ -6,7 +6,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
-import javax.inject.Inject;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.MalformedURLException;
@@ -33,8 +32,7 @@ public class FileSystemDocumentStore implements DocumentStore {
     private final Path textRoot;
 
     // Constructors
-    @Inject
-    public FileSystemDocumentStore(@StorageRoot @NotNull String storageRoot) throws ContentException {
+    public FileSystemDocumentStore(@NotNull String storageRoot) throws ContentException {
         Path storagePath;
         try {
             storagePath = Path.of(storageRoot);

@@ -1,26 +1,28 @@
-package io.miscellanea.madison.api.storage;
+package io.miscellanea.madison.schema.cdi;
 
 import io.miscellanea.madison.config.ConfigException;
 import io.miscellanea.madison.config.ConfigProducer;
+import io.miscellanea.madison.dal.config.DatabaseConfig;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
 import org.apache.commons.configuration2.CompositeConfiguration;
 
 @ApplicationScoped
-public class StorageApiConfigProducer extends ConfigProducer<StorageApiConfig> {
-    private StorageApiConfig config;
+public class DatabaseConfigProducer extends ConfigProducer<DatabaseConfig> {
+    // Fields
+    private DatabaseConfig config;
 
-    public StorageApiConfigProducer() {
-        super("/config/storage-api.properties");
+    public DatabaseConfigProducer() {
+        super("/config/database.properties");
     }
 
     // ConfigProducer
     @Override
-    protected StorageApiConfig buildCustomConfig(CompositeConfiguration configuration) {
-        return new StorageApiConfig(configuration.getInt("storage.api.port"),
-                configuration.getString("storage.api.content.dir"),
-                configuration.getString("storage.api.upload.dir"));
+    protected DatabaseConfig buildCustomConfig(CompositeConfiguration configuration) {
+        return new DatabaseConfig(configuration.getString("db.host"), configuration.getInt("db.port"),
+                configuration.getString("db.user"), configuration.getString("db.password"),
+                configuration.getString("db.name"));
     }
 
     // Producer methods
@@ -34,7 +36,8 @@ public class StorageApiConfigProducer extends ConfigProducer<StorageApiConfig> {
     }
 
     @Produces
-    public StorageApiConfig produce() {
+    public DatabaseConfig produce() {
         return this.config;
     }
+
 }

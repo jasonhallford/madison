@@ -27,7 +27,6 @@
         <!-- Dependency versions -->
         <weld.version>5.1.0.Final</weld.version>
         <h2.version>2.1.214</h2.version>
-        <guice.version>5.1.0</guice.version>
         <rabbitmq.version>5.16.0</rabbitmq.version>
         <jooq.version>3.17.6</jooq.version>
         <vertx.version>4.3.7</vertx.version>
@@ -54,18 +53,6 @@
                 <groupId>org.jboss.weld.se</groupId>
                 <artifactId>weld-se-core</artifactId>
                 <version>${weld.version}</version>
-            </dependency>
-
-            <!-- Guice -->
-            <dependency>
-                <groupId>com.google.inject</groupId>
-                <artifactId>guice</artifactId>
-                <version>${guice.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.google.inject.extensions</groupId>
-                <artifactId>guice-throwingproviders</artifactId>
-                <version>${guice.version}</version>
             </dependency>
 
             <!-- Redis -->

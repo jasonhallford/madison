@@ -1,4 +1,4 @@
-package io.miscellanea.madison.api.storage;
+package io.miscellanea.madison.api.storage.cdi;
 
 import io.miscellanea.madison.broker.BrokerConfig;
 import io.miscellanea.madison.config.ConfigException;

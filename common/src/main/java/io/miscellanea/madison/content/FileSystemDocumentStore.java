@@ -31,7 +31,7 @@ public class FileSystemDocumentStore implements DocumentStore {
     private final Path textRoot;
 
     // Constructors
-    public FileSystemDocumentStore(@StorageRoot @NotNull String storageRoot) throws ContentException {
+    public FileSystemDocumentStore(@NotNull String storageRoot) throws ContentException {
         Path storagePath;
         try {
             storagePath = Path.of(storageRoot);
