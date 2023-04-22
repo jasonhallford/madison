@@ -44,6 +44,8 @@
         <jetbrains.annotations.version>23.1.0</jetbrains.annotations.version>
         <jedis.version>4.3.1</jedis.version>
         <pdfbox.version>2.0.27</pdfbox.version>
+        <quarkus.version>3.0.0.Final</quarkus.version>
+        <quarkus.vertx-web.version>3.0.0.Beta1</quarkus.vertx-web.version>
     </properties>
 
     <dependencyManagement>
@@ -98,6 +100,15 @@
                 <groupId>org.flywaydb</groupId>
                 <artifactId>flyway-core</artifactId>
                 <version>${flyway.version}</version>
+            </dependency>
+
+            <!-- Quarkus -->
+            <dependency>
+                <groupId>io.quarkus</groupId>
+                <artifactId>quarkus-bom</artifactId>
+                <version>${quarkus.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
 
             <!-- Vert.x -->

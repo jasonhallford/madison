@@ -1,6 +1,6 @@
 package io.miscellanea.madison.api.storage.cdi;
 
-import io.miscellanea.madison.api.storage.StorageApiConfig;
+import io.miscellanea.madison.api.storage.VerticleConfig;
 import io.miscellanea.madison.broker.BrokerConfig;
 import io.miscellanea.madison.broker.EventService;
 import io.miscellanea.madison.broker.redis.RedisEventService;
@@ -21,13 +21,13 @@ public class StorageApiProducer {
 
     private EventService eventService;
     private DocumentStore documentStore;
-    private final StorageApiConfig storageApiConfig;
+    private final VerticleConfig verticleConfig;
     private final BrokerConfig brokerConfig;
 
     // Constructors
     @Inject
-    public StorageApiProducer(StorageApiConfig storageApiConfig, BrokerConfig brokerConfig) {
-        this.storageApiConfig = storageApiConfig;
+    public StorageApiProducer(VerticleConfig verticleConfig, BrokerConfig brokerConfig) {
+        this.verticleConfig = verticleConfig;
         this.brokerConfig = brokerConfig;
     }
 
@@ -38,7 +38,7 @@ public class StorageApiProducer {
             this.eventService = new RedisEventService(this.brokerConfig);
 
             logger.debug("Initializing file system document store implementation.");
-            this.documentStore = new FileSystemDocumentStore(this.storageApiConfig.contentDirectory());
+            this.documentStore = new FileSystemDocumentStore(this.verticleConfig.contentDirectory());
         } catch (Exception e) {
             throw new ConfigException("Unable to initialize Import Agent configuration module.", e);
         }

@@ -5,14 +5,14 @@ import io.miscellanea.madison.document.DocumentStore;
 import io.miscellanea.madison.document.Fingerprint;
 import io.miscellanea.madison.document.Status;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Promise;
-import io.vertx.core.http.HttpServer;
-import io.vertx.core.http.HttpServerOptions;
+import io.quarkus.runtime.StartupEvent;
+import io.smallrye.mutiny.vertx.core.AbstractVerticle;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
+import io.vertx.mutiny.core.Vertx;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,62 +23,38 @@ import java.io.ByteArrayInputStream;
 
 
 @ApplicationScoped
-public class StorageApiVertical extends AbstractVerticle {
+public class MainVerticle extends AbstractVerticle {
     // Fields
-    private static final Logger logger = LoggerFactory.getLogger(StorageApiVertical.class);
+    private static final Logger logger = LoggerFactory.getLogger(MainVerticle.class);
 
-    private final StorageApiConfig storageApiConfig;
+    private final io.vertx.core.Vertx vertx;
+    private final VerticleConfig verticleConfig;
     private final EventService eventService;
     private final DocumentStore documentStore;
 
     // Constructors
     @Inject
-    public StorageApiVertical(
-            StorageApiConfig storageApiConfig, DocumentStore documentStore, EventService eventService) {
-        this.storageApiConfig = storageApiConfig;
+    public MainVerticle(io.vertx.core.Vertx vertx,
+                        VerticleConfig verticleConfig, DocumentStore documentStore, EventService eventService) {
+        this.vertx = vertx;
+        this.verticleConfig = verticleConfig;
         this.documentStore = documentStore;
         this.eventService = eventService;
     }
 
-    // Initialize the HTTP server on deploy.
-    @Override
-    public void start(Promise<Void> startPromise) {
-        logger.debug("start() method invoked.");
-
-        // Configure the REST endpoint
-        logger.debug("Creating HTTP server on port TCP {}.", this.storageApiConfig.port());
-        HttpServerOptions opts = new HttpServerOptions().setPort(this.storageApiConfig.port());
-        HttpServer httpServer = vertx.createHttpServer(opts);
-
-        Router router = Router.router(vertx);
-        this.configureRoutes(router);
-
-        logger.debug("Staring API HTTP REST endpoint.");
-        httpServer
-                .requestHandler(router)
-                .listen()
-                .onSuccess(
-                        httpResult -> {
-                            logger.debug(
-                                    "Successfully started HTTP server. Madison Store REST API is listening on port TCP {}.",
-                                    this.storageApiConfig.port());
-                            startPromise.complete();
-                        })
-                .onFailure(
-                        cause -> {
-                            logger.error("Failed to start Madison Store REST API HTTP server.", cause);
-                            startPromise.fail(cause);
-                        });
-    }
-
-    private void configureRoutes(Router router) {
-        // Register the body handler so that we may access form data later on.
+    public void init(@Observes StartupEvent startupEvent, Vertx vertx, MainVerticle verticle,
+                     Router router) {
+        logger.debug("Configuring API routes.");
         router
                 .route()
                 .handler(
-                        BodyHandler.create(this.storageApiConfig.uploadDirectory())
+                        BodyHandler.create(this.verticleConfig.uploadDirectory())
                                 .setDeleteUploadedFilesOnEnd(true));
+        this.configureRoutes(router);
+        vertx.deployVerticle(verticle).await().indefinitely();
+    }
 
+    private void configureRoutes(Router router) {
         // Bind import endpoints
         router.put("/api/sources/:fingerprint").handler(this::putSource);
         router.put("/api/thumbnails/:fingerprint").handler(this::putThumbnail);
@@ -117,8 +93,8 @@ public class StorageApiVertical extends AbstractVerticle {
                             Status status = (Status) result.result();
                             logger.debug("Retrieved status for {}: {}.", fingerprint, status);
 
+                            ctx.response().setStatusCode(HttpResponseStatus.OK.code());
                             ctx.json(status);
-                            ctx.response().setStatusCode(HttpResponseStatus.OK.code()).end();
                         } else {
                             logger.error("Failed to store source for " + fingerprint + ".", result.cause());
                             ctx.response().setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code()).end();
