@@ -7,14 +7,14 @@ import io.miscellanea.madison.broker.Queue;
 import io.miscellanea.madison.document.Document;
 import io.miscellanea.madison.repository.DocumentRepository;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Promise;
-import io.vertx.core.http.HttpServer;
-import io.vertx.core.http.HttpServerOptions;
+import io.quarkus.runtime.StartupEvent;
+import io.smallrye.mutiny.vertx.core.AbstractVerticle;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
+import io.vertx.mutiny.core.Vertx;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,60 +23,45 @@ import java.nio.file.Path;
 import java.util.UUID;
 
 @ApplicationScoped
-public class CatalogApiVertical extends AbstractVerticle {
+public class MainVerticle extends AbstractVerticle {
     // Fields
-    private static final Logger logger = LoggerFactory.getLogger(CatalogApiVertical.class);
+    private static final Logger logger = LoggerFactory.getLogger(MainVerticle.class);
 
-    private final CatalogApiConfig catalogApiConfig;
+    private final io.vertx.core.Vertx vertx;
+    private final VerticleConfig verticleConfig;
     private final EventService eventService;
     private final Queue<ImportMessage> importQueue;
     private final DocumentRepository documentRepository;
 
     // Constructors
     @Inject
-    public CatalogApiVertical(
-            CatalogApiConfig catalogApiConfig,
-            EventService eventService,
-            Queue<ImportMessage> importQueue,
-            DocumentRepository documentRepository) {
-        this.catalogApiConfig = catalogApiConfig;
+    public MainVerticle(io.vertx.core.Vertx vertx,
+                        VerticleConfig verticleConfig,
+                        EventService eventService,
+                        Queue<ImportMessage> importQueue,
+                        DocumentRepository documentRepository) {
+        this.vertx = vertx;
+        this.verticleConfig = verticleConfig;
         this.eventService = eventService;
         this.importQueue = importQueue;
         this.documentRepository = documentRepository;
     }
 
-    // Initialize the HTTP server on deploy.
-    @Override
-    public void start(Promise<Void> startPromise) {
-        logger.debug("start() method invoked.");
-
-        // Configure the REST endpoint
-        logger.debug("Creating API HTTP server.");
-        HttpServerOptions opts = new HttpServerOptions().setPort(this.catalogApiConfig.port());
-        HttpServer httpServer = vertx.createHttpServer(opts);
-
-        Router router = Router.router(vertx);
+    public void init(@Observes StartupEvent startupEvent, Vertx vertx, MainVerticle verticle,
+                     Router router) {
+        logger.debug("Configuring API routes.");
+        router
+                .route()
+                .handler(
+                        BodyHandler.create(this.verticleConfig.uploadDirectory())
+                                .setDeleteUploadedFilesOnEnd(true));
         this.configureRoutes(router);
-
-        logger.debug("Staring API HTTP REST endpoint.");
-        httpServer
-                .requestHandler(router)
-                .listen()
-                .onSuccess(
-                        httpResult -> {
-                            logger.debug("Successfully started API REST endpoint.");
-                            startPromise.complete();
-                        })
-                .onFailure(
-                        cause -> {
-                            logger.error("Failed to start REST endpoint.", cause);
-                            startPromise.fail(cause);
-                        });
+        vertx.deployVerticle(verticle).await().indefinitely();
     }
 
     private void configureRoutes(Router router) {
         // Register the body handler so we may access form data later on.
-        router.route().handler(BodyHandler.create(this.catalogApiConfig.uploadDirectory()));
+        router.route().handler(BodyHandler.create(this.verticleConfig.uploadDirectory()));
 
         // Bind import endpoints
         router.get("/api/import/scan").handler(this::getImportScan);
@@ -103,7 +88,7 @@ public class CatalogApiVertical extends AbstractVerticle {
 
         // Dispatch the event to the event service. We execute this as blocking code because we have no
         // guarantee that the underlying implementation won't use blocking calls.
-        vertx.executeBlocking(
+        this.vertx.executeBlocking(
                 promise -> {
                     logger.debug("Dispatching event '{}' to the event service.", event);
                     try {
@@ -128,7 +113,7 @@ public class CatalogApiVertical extends AbstractVerticle {
         logger.debug("Handling request to upload POSTed document for import.");
 
         final Path importFile =
-                Path.of(this.catalogApiConfig.uploadDirectory(), UUID.randomUUID().toString());
+                Path.of(this.verticleConfig.uploadDirectory(), UUID.randomUUID().toString());
         logger.debug("Writing uploaded file to location {}.", importFile);
 
         if (!ctx.body().isEmpty() && ctx.body().length() > 0) {

@@ -15,9 +15,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
-public class StorageApiProducer {
+public class VerticleProducer {
     // Fields
-    private static final Logger logger = LoggerFactory.getLogger(StorageApiProducer.class);
+    private static final Logger logger = LoggerFactory.getLogger(VerticleProducer.class);
 
     private EventService eventService;
     private DocumentStore documentStore;
@@ -26,7 +26,7 @@ public class StorageApiProducer {
 
     // Constructors
     @Inject
-    public StorageApiProducer(VerticleConfig verticleConfig, BrokerConfig brokerConfig) {
+    public VerticleProducer(VerticleConfig verticleConfig, BrokerConfig brokerConfig) {
         this.verticleConfig = verticleConfig;
         this.brokerConfig = brokerConfig;
     }
