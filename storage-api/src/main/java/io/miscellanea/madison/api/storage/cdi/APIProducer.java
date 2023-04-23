@@ -1,6 +1,6 @@
 package io.miscellanea.madison.api.storage.cdi;
 
-import io.miscellanea.madison.api.storage.VerticleConfig;
+import io.miscellanea.madison.api.storage.APIConfig;
 import io.miscellanea.madison.broker.BrokerConfig;
 import io.miscellanea.madison.broker.EventService;
 import io.miscellanea.madison.broker.redis.RedisEventService;
@@ -15,19 +15,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
-public class VerticleProducer {
+public class APIProducer {
     // Fields
-    private static final Logger logger = LoggerFactory.getLogger(VerticleProducer.class);
+    private static final Logger logger = LoggerFactory.getLogger(APIProducer.class);
 
     private EventService eventService;
     private DocumentStore documentStore;
-    private final VerticleConfig verticleConfig;
+    private final APIConfig APIConfig;
     private final BrokerConfig brokerConfig;
 
     // Constructors
     @Inject
-    public VerticleProducer(VerticleConfig verticleConfig, BrokerConfig brokerConfig) {
-        this.verticleConfig = verticleConfig;
+    public APIProducer(APIConfig APIConfig, BrokerConfig brokerConfig) {
+        this.APIConfig = APIConfig;
         this.brokerConfig = brokerConfig;
     }
 
@@ -38,7 +38,7 @@ public class VerticleProducer {
             this.eventService = new RedisEventService(this.brokerConfig);
 
             logger.debug("Initializing file system document store implementation.");
-            this.documentStore = new FileSystemDocumentStore(this.verticleConfig.contentDirectory());
+            this.documentStore = new FileSystemDocumentStore(this.APIConfig.contentDirectory());
         } catch (Exception e) {
             throw new ConfigException("Unable to initialize Import Agent configuration module.", e);
         }

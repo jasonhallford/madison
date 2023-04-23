@@ -16,14 +16,14 @@ public final class Fingerprint {
     private final String fingerprint;
 
     // Constructors
-    public Fingerprint(@NotNull String fingerprint) throws IllegalArgumentException {
+    public Fingerprint(@NotNull String fingerprint) throws InvalidFingerprintException {
         logger.debug("Creating new fingerprint from string '{}'.", fingerprint);
 
         if (SHA256.matcher(fingerprint).matches()) {
             logger.debug("String {} is a valid fingerprint.", fingerprint);
             this.fingerprint = fingerprint.toUpperCase();
         } else {
-            throw new IllegalArgumentException("'" + fingerprint + "' is not a valid fingerprint.");
+            throw new InvalidFingerprintException("'" + fingerprint + "' is not a valid fingerprint.");
         }
     }
 

@@ -146,7 +146,7 @@ public class FileSystemDocumentStore implements DocumentStore {
     }
 
     @Override
-    public Status status(@NotNull Fingerprint fingerprint) {
+    public StoreStatus status(@NotNull Fingerprint fingerprint) {
         Function<String, ComponentStatus> componentExists =
                 (String component) -> {
                     try {
@@ -165,7 +165,7 @@ public class FileSystemDocumentStore implements DocumentStore {
         var thumbnailStatus = componentExists.apply(THUMBNAIL_COMPONENT);
         var textStatus = componentExists.apply(TEXT_COMPONENT);
 
-        return new Status(sourceStatus, thumbnailStatus, textStatus);
+        return new StoreStatus(sourceStatus, thumbnailStatus, textStatus);
     }
 
     // Private methods

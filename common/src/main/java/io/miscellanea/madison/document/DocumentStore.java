@@ -16,7 +16,7 @@ public interface DocumentStore {
 
     boolean delete(@NotNull Fingerprint fingerprint);
 
-    Status status(@NotNull Fingerprint fingerprint);
+    StoreStatus status(@NotNull Fingerprint fingerprint);
 
     URL sourceURL(@NotNull Fingerprint fingerprint) throws ContentException;
 
