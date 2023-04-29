@@ -1,6 +1,6 @@
 package io.miscellanea.madison.content;
 
-import io.miscellanea.madison.entity.Document;
+import io.miscellanea.madison.document.Document;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -215,11 +215,11 @@ public class FileSystemDocumentStore implements DocumentStore {
 
     private Path componentPath(Document document, String component) {
         return switch (component) {
-            case DOCUMENT_COMPONENT -> this.documentRoot.resolve(document.getFingerprint().toLowerCase() +
+            case DOCUMENT_COMPONENT -> this.documentRoot.resolve(document.getFingerprint().toString() +
                     DOCUMENT_COMPONENT_EXTENSION);
-            case THUMBNAIL_COMPONENT -> this.thumbnailRoot.resolve(document.getFingerprint().toLowerCase() +
+            case THUMBNAIL_COMPONENT -> this.thumbnailRoot.resolve(document.getFingerprint().toString() +
                     THUMBNAIL_COMPONENT_EXTENSION);
-            case TEXT_COMPONENT -> this.textRoot.resolve(document.getFingerprint().toLowerCase() +
+            case TEXT_COMPONENT -> this.textRoot.resolve(document.getFingerprint().toString() +
                     TEXT_COMPONENT_EXTENSION);
             default -> throw new ContentException("Unknown repository component '" + component + ".");
         };

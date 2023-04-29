@@ -1,7 +1,8 @@
 package io.miscellanea.madison.document;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.miscellanea.madison.entity.AbstractEntity;
-import io.miscellanea.madison.entity.Author;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -10,12 +11,19 @@ import java.util.Objects;
 
 public class Document extends AbstractEntity {
     // Fields
+    @JsonProperty("title")
     private String title;
+    @JsonProperty("fingerprint")
     private Fingerprint fingerprint;
+    @JsonProperty("pages")
     private int pageCount;
+    @JsonProperty("content-type")
     private String contentType;
+    @JsonProperty("authors")
     private List<Author> authors;
+    @JsonProperty("isbn10")
     private String isbn10;
+    @JsonProperty("isbn13")
     private String isbn13;
 
     // Constructors
@@ -26,8 +34,14 @@ public class Document extends AbstractEntity {
         this(null, null, fingerPrint, 0, contentType, null, null, null);
     }
 
-    public Document(Long id, String title, @NotNull Fingerprint fingerprint, int pageCount,
-                    @NotNull String contentType, String isbn10, String isbn13, List<Author> authors) {
+    @JsonCreator
+    public Document(@JsonProperty("id") Long id, @JsonProperty("title") String title,
+                    @JsonProperty("fingerprint") @NotNull Fingerprint fingerprint,
+                    @JsonProperty("pages") int pageCount,
+                    @JsonProperty("content-type") @NotNull String contentType,
+                    @JsonProperty("isbn10") String isbn10,
+                    @JsonProperty("isbn13") String isbn13,
+                    @JsonProperty("authors") List<Author> authors) {
         super(id);
 
         this.title = title;

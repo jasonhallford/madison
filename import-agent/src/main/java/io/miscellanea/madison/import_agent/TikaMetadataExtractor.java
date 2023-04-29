@@ -4,8 +4,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.miscellanea.madison.content.ContentException;
 import io.miscellanea.madison.content.MetadataExtractor;
-import io.miscellanea.madison.entity.Author;
-import io.miscellanea.madison.entity.Document;
+import io.miscellanea.madison.document.Document;
+import io.miscellanea.madison.document.Fingerprint;
+import io.miscellanea.madison.document.Author;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.client.Entity;
@@ -106,6 +107,7 @@ public class TikaMetadataExtractor implements MetadataExtractor {
         logger.debug("Author(s): {}", author);
 
         return new Document(
-                null, title, fingerprint, pageCount, contentType, null, null, Author.fromString(author));
+                null, title, new Fingerprint(fingerprint), pageCount, contentType, null, null,
+                Author.fromString(author));
     }
 }

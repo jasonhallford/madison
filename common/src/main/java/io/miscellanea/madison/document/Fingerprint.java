@@ -1,5 +1,7 @@
 package io.miscellanea.madison.document;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,10 +15,12 @@ public final class Fingerprint {
 
     private static final Pattern SHA256 = Pattern.compile("[A-Fa-f0-9]{64}");
 
+    @JsonProperty("fingerprint")
     private final String fingerprint;
 
     // Constructors
-    public Fingerprint(@NotNull String fingerprint) throws InvalidFingerprintException {
+    @JsonCreator
+    public Fingerprint(@NotNull @JsonProperty("fingerprint") String fingerprint) throws InvalidFingerprintException {
         logger.debug("Creating new fingerprint from string '{}'.", fingerprint);
 
         if (SHA256.matcher(fingerprint).matches()) {

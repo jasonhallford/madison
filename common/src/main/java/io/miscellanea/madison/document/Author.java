@@ -1,5 +1,8 @@
-package io.miscellanea.madison.entity;
+package io.miscellanea.madison.document;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.miscellanea.madison.entity.AbstractEntity;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.jetbrains.annotations.NotNull;
@@ -18,14 +21,20 @@ public class Author extends AbstractEntity {
     private static final Pattern nameAndPattern = Pattern.compile(",*\\s*(and|&)\\s*");
     private static final Pattern nameWhitespacePattern = Pattern.compile(",\\s+");
 
+    @JsonProperty("first-name")
     private String firstName;
+    @JsonProperty("middle-name")
     private String middleName;
+    @JsonProperty("last-name")
     private String lastName;
+    @JsonProperty("suffix")
     private String suffix;
 
     // Constructors
 
-    public Author(@NotNull String firstName, String middleName, @NotNull String lastName, String suffix) {
+    @JsonCreator
+    public Author(@NotNull @JsonProperty("first-name") String firstName, @JsonProperty("middle-name") String middleName,
+                  @NotNull @JsonProperty("last-name") String lastName, @JsonProperty("suffix") String suffix) {
         this.firstName = firstName;
         this.middleName = middleName;
         this.lastName = lastName;

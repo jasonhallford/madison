@@ -4,7 +4,7 @@ import io.miscellanea.madison.dal.jooq.tables.records.AuthorDocumentRecord;
 import io.miscellanea.madison.dal.jooq.tables.records.AuthorRecord;
 import io.miscellanea.madison.dal.jooq.tables.records.DocumentRecord;
 import io.miscellanea.madison.document.Document;
-import io.miscellanea.madison.entity.Author;
+import io.miscellanea.madison.document.Author;
 import io.miscellanea.madison.repository.DocumentRepository;
 import io.miscellanea.madison.repository.RepositoryException;
 import org.jetbrains.annotations.NotNull;

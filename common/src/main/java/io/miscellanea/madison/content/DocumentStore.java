@@ -1,6 +1,6 @@
 package io.miscellanea.madison.content;
 
-import io.miscellanea.madison.entity.Document;
+import io.miscellanea.madison.document.Document;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.image.BufferedImage;

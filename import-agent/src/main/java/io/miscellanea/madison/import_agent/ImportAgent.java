@@ -5,7 +5,7 @@ import io.miscellanea.madison.broker.EventService;
 import io.miscellanea.madison.broker.ImportMessage;
 import io.miscellanea.madison.broker.Queue;
 import io.miscellanea.madison.broker.redis.RedisImportMessage;
-import io.miscellanea.madison.entity.Document;
+import io.miscellanea.madison.document.Document;
 import jakarta.enterprise.util.TypeLiteral;
 import org.jboss.weld.environment.se.Weld;
 import org.jboss.weld.environment.se.WeldContainer;

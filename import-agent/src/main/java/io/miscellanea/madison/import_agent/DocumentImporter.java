@@ -7,16 +7,19 @@ import io.miscellanea.madison.content.ContentException;
 import io.miscellanea.madison.content.ContentExtractor;
 import io.miscellanea.madison.content.MetadataExtractor;
 import io.miscellanea.madison.content.ThumbnailGenerator;
+import io.miscellanea.madison.document.Document;
 import io.miscellanea.madison.document.FingerprintGenerator;
-import io.miscellanea.madison.entity.Document;
+import jakarta.enterprise.context.Dependent;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.core.GenericEntity;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.apache.http.HttpStatus;
 import org.jboss.resteasy.client.jaxrs.ResteasyClient;
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
+import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataOutput;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +33,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.function.Supplier;
 
+@Dependent
 public class DocumentImporter implements Supplier<Document> {
     // Fields
     private static final Logger logger = LoggerFactory.getLogger(DocumentImporter.class);
@@ -140,7 +144,7 @@ public class DocumentImporter implements Supplier<Document> {
         String targetUrl =
                 String.format("%s/api/sources/%s", this.config.storageUrl(), document.getFingerprint());
         try (InputStream sourceStream = this.sourceUrl.openStream()) {
-            this.putDocumentResource(targetUrl, sourceStream, MediaType.APPLICATION_OCTET_STREAM_TYPE);
+            this.putDocumentResource(targetUrl, sourceStream, "source", MediaType.APPLICATION_OCTET_STREAM_TYPE);
         } catch (Exception e) {
             if (e instanceof ContentException contentException) {
                 throw contentException;
@@ -158,7 +162,7 @@ public class DocumentImporter implements Supplier<Document> {
             try (InputStream thumbnailStream =
                          new ByteArrayInputStream(byteArrayOutputStream.toByteArray())) {
                 this.putDocumentResource(
-                        targetUrl, thumbnailStream, MediaType.APPLICATION_OCTET_STREAM_TYPE);
+                        targetUrl, thumbnailStream, "thumbnail", MediaType.APPLICATION_OCTET_STREAM_TYPE);
             } catch (Exception e) {
                 if (e instanceof ContentException contentException) {
                     throw contentException;
@@ -175,7 +179,7 @@ public class DocumentImporter implements Supplier<Document> {
         targetUrl =
                 String.format("%s/api/texts/%s", this.config.storageUrl(), document.getFingerprint());
         try (InputStream textStream = new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8))) {
-            this.putDocumentResource(targetUrl, textStream, MediaType.TEXT_PLAIN_TYPE);
+            this.putDocumentResource(targetUrl, textStream, "text", MediaType.TEXT_PLAIN_TYPE);
         } catch (Exception e) {
             if (e instanceof ContentException contentException) {
                 throw contentException;
@@ -185,7 +189,7 @@ public class DocumentImporter implements Supplier<Document> {
         }
     }
 
-    private void putDocumentResource(String targetUrl, InputStream contentStream, MediaType mediaType)
+    private void putDocumentResource(String targetUrl, InputStream contentStream, String field, MediaType mediaType)
             throws ContentException {
 
         try {
@@ -195,7 +199,14 @@ public class DocumentImporter implements Supplier<Document> {
             }
 
             logger.debug("PUTting document to Storage API at {}.", targetUrl);
-            try (Response response = target.request().put(Entity.entity(contentStream, mediaType))) {
+
+            // Build the multipart entity to transmit the content to the Storage API.
+            var mdo = new MultipartFormDataOutput();
+            mdo.addFormData(field, contentStream, mediaType);
+            var entity = new GenericEntity<>(mdo) {
+            };
+
+            try (Response response = target.request().put(Entity.entity(mdo, MediaType.MULTIPART_FORM_DATA_TYPE))) {
                 if (response.getStatus() == HttpStatus.SC_CREATED) {
                     logger.debug("Received CREATED response from Storage API.");
                 } else {
