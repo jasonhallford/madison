@@ -108,7 +108,7 @@ public class DocumentImporter implements Supplier<Document> {
 
     // Private methods
     private void updateCatalog(Document document) throws ContentException {
-        String targetUrl = String.format("%s/api/document", this.config.catalogUrl());
+        String targetUrl = String.format("%s/api/documents", this.config.catalogUrl());
 
         try {
             WebTarget target = this.resteasyClient.target(targetUrl);

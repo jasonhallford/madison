@@ -7,7 +7,7 @@ import jakarta.enterprise.inject.Produces;
 import org.eclipse.microprofile.config.ConfigProvider;
 
 @ApplicationScoped
-public class VerticleConfigProducer {
+public class APIConfigProducer {
     private APIConfig config;
 
 

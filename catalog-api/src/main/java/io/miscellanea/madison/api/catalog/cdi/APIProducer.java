@@ -19,9 +19,9 @@ import org.slf4j.LoggerFactory;
 import java.sql.Connection;
 
 @ApplicationScoped
-public class VerticleProducer {
+public class APIProducer {
     // Fields
-    private static final Logger logger = LoggerFactory.getLogger(VerticleProducer.class);
+    private static final Logger logger = LoggerFactory.getLogger(APIProducer.class);
     public static final String IMPORT_QUEUE_NAME = "madison.import";
 
     private final BrokerConfig brokerConfig;
@@ -32,7 +32,7 @@ public class VerticleProducer {
 
     // Constructors
     @Inject
-    public VerticleProducer(Connection connection, BrokerConfig brokerConfig) {
+    public APIProducer(Connection connection, BrokerConfig brokerConfig) {
         this.brokerConfig = brokerConfig;
         this.connection = connection;
     }
