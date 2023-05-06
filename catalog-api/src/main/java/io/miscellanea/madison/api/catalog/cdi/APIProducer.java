@@ -7,16 +7,12 @@ import io.miscellanea.madison.broker.Queue;
 import io.miscellanea.madison.broker.redis.RedisEventService;
 import io.miscellanea.madison.broker.redis.RedisQueue;
 import io.miscellanea.madison.config.ConfigException;
-import io.miscellanea.madison.dal.repository.JooqDocumentRepository;
-import io.miscellanea.madison.repository.DocumentRepository;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.sql.Connection;
 
 @ApplicationScoped
 public class APIProducer {
@@ -26,15 +22,12 @@ public class APIProducer {
 
     private final BrokerConfig brokerConfig;
     private EventService eventService;
-    private DocumentRepository documentRepository;
     private Queue<ImportMessage> importMessageQueue;
-    private Connection connection;
 
     // Constructors
     @Inject
-    public APIProducer(Connection connection, BrokerConfig brokerConfig) {
+    public APIProducer(BrokerConfig brokerConfig) {
         this.brokerConfig = brokerConfig;
-        this.connection = connection;
     }
 
     @PostConstruct
@@ -42,10 +35,6 @@ public class APIProducer {
         try {
             logger.debug("Initializing Redis EventService implementation.");
             this.eventService = new RedisEventService(this.brokerConfig);
-
-            logger.debug("Initializing JOOQ DocumentRepository implementation.");
-            this.documentRepository = new JooqDocumentRepository(connection);
-            this.connection = null; // We don't need to hold this reference any longer.
 
             logger.debug("Initializing Redis import message queue.");
             this.importMessageQueue = new RedisQueue<>(this.brokerConfig, IMPORT_QUEUE_NAME);
@@ -63,10 +52,5 @@ public class APIProducer {
     @Produces
     public Queue<ImportMessage> produceImportMessageQueue() {
         return this.importMessageQueue;
-    }
-
-    @Produces
-    public DocumentRepository produceDocumentRepository() {
-        return this.documentRepository;
     }
 }

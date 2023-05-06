@@ -24,11 +24,13 @@
             <artifactId>redis-broker</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
+        <!--
         <dependency>
             <groupId>io.miscellanea.madison</groupId>
             <artifactId>data-access</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
+        -->
 
         <!-- Third party dependencies -->
         <dependency>
@@ -50,6 +52,14 @@
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-arc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-hibernate-orm-panache</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-jdbc-postgresql</artifactId>
         </dependency>
 
         <!-- Test Dependencies -->

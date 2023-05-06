@@ -16,25 +16,23 @@ import org.jboss.resteasy.reactive.multipart.FileUpload;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.BufferedInputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 
 @RequestScoped
-@Path("thumbnails")
-public class Thumbnails {
+@Path("texts")
+public class TextsResource {
     // Fields
-    private static final Logger logger = LoggerFactory.getLogger(Thumbnails.class);
+    private static final Logger logger = LoggerFactory.getLogger(TextsResource.class);
 
     private final DocumentStore documentStore;
 
     // Constructors
     @Inject
-    public Thumbnails(DocumentStore documentStore) {
+    public TextsResource(DocumentStore documentStore) {
         this.documentStore = documentStore;
     }
 
@@ -43,33 +41,31 @@ public class Thumbnails {
     @Path("{fingerprint}")
     @Blocking
     public Response putThumbnail(@RestPath(value = "fingerprint") String fingerprintParam,
-                                 @RestForm("thumbnail") FileUpload thumbnailFile) {
-        if (thumbnailFile == null || thumbnailFile.uploadedFile().toFile().length() < 1) {
-            logger.warn("Upload form did not contain a 'thumbnail' field; returning BAD_REQUEST.");
+                                 @RestForm("text") FileUpload textFile) {
+        if (textFile == null || textFile.uploadedFile().toFile().length() < 1) {
+            logger.warn("Upload form did not contain a 'text' field; returning BAD_REQUEST.");
             return Response.status(RestResponse.Status.BAD_REQUEST).build();
         }
 
         try {
             var fingerprint = new Fingerprint(fingerprintParam);
-            logger.debug("Processing PUT request for thumbnail {}.", fingerprint);
+            logger.debug("Processing PUT request for text {}.", fingerprint);
 
-            var uploadPath = thumbnailFile.uploadedFile();
-            logger.debug("Processing thumbnail at path {}.", uploadPath);
+            var uploadPath = textFile.uploadedFile();
+            logger.debug("Processing text at path {}.", uploadPath);
 
-            try (BufferedInputStream thumbnail = new BufferedInputStream(new FileInputStream(uploadPath.toFile()))) {
-                BufferedImage image = ImageIO.read(thumbnail);
-                this.documentStore.storeThumbnail(fingerprint, image);
-                logger.debug("Successfully stored thumbnail {}.", fingerprint);
-                return Response.created(new URI("/thumbnails/" + fingerprint)).build();
-            } catch (URISyntaxException e) {
-                logger.error("Unable to create URI for new resource.", e);
-                return Response.serverError().build();
-            }
+            String text = Files.readString(uploadPath, StandardCharsets.UTF_8);
+            this.documentStore.storeText(fingerprint, text);
+            logger.debug("Successfully stored text {}.", fingerprint);
+            return Response.created(new URI("/texts/" + fingerprint)).build();
         } catch (InvalidFingerprintException ife) {
             logger.error("Path element '" + fingerprintParam + "' is not a valid fingerprint.", ife);
             return Response.status(RestResponse.Status.BAD_REQUEST).build();
         } catch (IOException ioe) {
-            logger.error("Unable to open thumbnail " + fingerprintParam + " at " + thumbnailFile.uploadedFile() + ".", ioe);
+            logger.error("Unable to open text " + fingerprintParam + " at " + textFile.uploadedFile() + ".", ioe);
+            return Response.serverError().build();
+        } catch (URISyntaxException e) {
+            logger.error("Unable to create URI for new resource.", e);
             return Response.serverError().build();
         }
     }

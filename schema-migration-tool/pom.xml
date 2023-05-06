@@ -21,11 +21,15 @@
         <!-- Madison dependencies -->
         <dependency>
             <groupId>io.miscellanea.madison</groupId>
-            <artifactId>data-access</artifactId>
+            <artifactId>common</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
 
         <!-- Third part dependencies -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>

@@ -19,16 +19,16 @@ import org.slf4j.LoggerFactory;
 
 @RequestScoped
 @Path("import")
-public class Import {
+public class ImportResource {
     // Fields
-    private static final Logger logger = LoggerFactory.getLogger(Import.class);
+    private static final Logger logger = LoggerFactory.getLogger(ImportResource.class);
 
     private final EventService eventService;
     private final Queue<ImportMessage> importQueue;
 
     // Constructors
     @Inject
-    public Import(EventService eventService, Queue<ImportMessage> importQueue) {
+    public ImportResource(EventService eventService, Queue<ImportMessage> importQueue) {
         this.eventService = eventService;
         this.importQueue = importQueue;
     }

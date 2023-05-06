@@ -2,11 +2,11 @@ package io.miscellanea.madison.schema.cdi;
 
 import io.miscellanea.madison.config.ConfigException;
 import io.miscellanea.madison.config.ConfigProducer;
-import io.miscellanea.madison.dal.config.DatabaseConfig;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
 import org.apache.commons.configuration2.CompositeConfiguration;
+import io.miscellanea.madison.schema.DatabaseConfig;
 
 @ApplicationScoped
 public class DatabaseConfigProducer extends ConfigProducer<DatabaseConfig> {

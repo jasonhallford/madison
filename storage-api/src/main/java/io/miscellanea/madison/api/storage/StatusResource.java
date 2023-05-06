@@ -20,15 +20,15 @@ import org.slf4j.LoggerFactory;
 @RequestScoped
 @Produces({MediaType.APPLICATION_JSON})
 @Path("status")
-public class Status {
+public class StatusResource {
     // Fields
-    private static final Logger logger = LoggerFactory.getLogger(Status.class);
+    private static final Logger logger = LoggerFactory.getLogger(StatusResource.class);
 
     private final DocumentStore documentStore;
 
     // Constructors
     @Inject
-    public Status(DocumentStore documentStore) {
+    public StatusResource(DocumentStore documentStore) {
         this.documentStore = documentStore;
     }
 

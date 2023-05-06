@@ -1,29 +1,24 @@
--- Create the svc_catalog schema and base tables
-CREATE SCHEMA IF NOT EXISTS catalog AUTHORIZATION madison;
-
 -- Create the collection table, the base document table to which all other tables join.
-CREATE TABLE IF NOT EXISTS catalog.document
+CREATE TABLE IF NOT EXISTS document
 (
     id           BIGSERIAL PRIMARY KEY,
     title        VARCHAR(100),
     page_count   INTEGER,
     fingerprint  VARCHAR(100) NOT NULL UNIQUE,
-    content_type VARCHAR(100) NOT NULL,
-    isbn10       CHAR(10),
-    isbn13       CHAR(13)
+    content_type VARCHAR(100) NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS catalog.identifiers
+CREATE TABLE IF NOT EXISTS identifiers
 (
     id      BIGSERIAL PRIMARY KEY,
-    doc_id  BIGINT NOT NULL REFERENCES catalog.document (id),
+    document_id  BIGINT NOT NULL REFERENCES document (id),
     isbn_10 CHAR(10),
     isbn_13 CHAR(13)
 );
 
-CREATE INDEX IF NOT EXISTS identifiers_fk_doc_id ON catalog.identifiers (doc_id);
+CREATE INDEX IF NOT EXISTS identifiers_fk_doc_id ON identifiers (document_id);
 
-CREATE TABLE catalog.author
+CREATE TABLE author
 (
     id          BIGSERIAL PRIMARY KEY,
     first_name  VARCHAR(50) NOT NULL,
@@ -35,13 +30,13 @@ CREATE TABLE catalog.author
                                                    CASE WHEN middle_name IS NOT NULL THEN ' ' ELSE '' END ||
                                                    last_name ||
                                                    CASE
-                                                       WHEN suffix IS NOT NULL THEN ', ' || author.suffix
+                                                       WHEN suffix IS NOT NULL THEN ', ' || suffix
                                                        ELSE '' END) STORED
 );
 
-CREATE TABLE catalog.author_document
+CREATE TABLE author_document
 (
-    author_id   BIGINT NOT NULL REFERENCES catalog.author (id),
-    document_id BIGINT NOT NULL REFERENCES catalog.document (id),
+    author_id   BIGINT NOT NULL REFERENCES author (id),
+    document_id BIGINT NOT NULL REFERENCES document (id),
     PRIMARY KEY (author_id, document_id)
 );

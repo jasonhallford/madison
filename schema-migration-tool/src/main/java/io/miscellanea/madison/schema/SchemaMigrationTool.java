@@ -1,6 +1,5 @@
 package io.miscellanea.madison.schema;
 
-import io.miscellanea.madison.dal.config.DatabaseConfig;
 import org.flywaydb.core.Flyway;
 import org.jboss.weld.environment.se.Weld;
 import org.jboss.weld.environment.se.WeldContainer;

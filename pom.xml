@@ -14,7 +14,6 @@
         <module>schema-migration-tool</module>
         <module>common</module>
         <module>import-agent</module>
-        <module>data-access</module>
         <module>redis-broker</module>
         <module>storage-api</module>
     </modules>
@@ -90,7 +89,6 @@
                 <artifactId>h2</artifactId>
                 <version>${h2.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.postgresql</groupId>
                 <artifactId>postgresql</artifactId>
