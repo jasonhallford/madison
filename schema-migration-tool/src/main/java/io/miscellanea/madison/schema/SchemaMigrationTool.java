@@ -17,10 +17,10 @@ public class SchemaMigrationTool {
 
             // Create the Flyway instance to manage DB migration
             DatabaseConfig config = cdi.select(DatabaseConfig.class).get();
-            var pgUrl = String.format("jdbc:postgresql://%s:%d/%s", config.dbHost(), config.dbPort(), config.dbName());
-            logger.debug("Flyway will connect to database using URL {}.", pgUrl);
+            var jdbcUrl = String.format("jdbc:h2://%s/%s", config.dbDir(), config.dbName());
+            logger.debug("Flyway will connect to database using URL {}.", jdbcUrl);
 
-            Flyway flyway = Flyway.configure().dataSource(pgUrl, config.dbUser(), config.dbPassword()).load();
+            Flyway flyway = Flyway.configure().dataSource(jdbcUrl, config.dbUser(), config.dbPassword()).load();
 
             logger.info("Executing flyway schema migration.");
             var migrateResult = flyway.migrate();

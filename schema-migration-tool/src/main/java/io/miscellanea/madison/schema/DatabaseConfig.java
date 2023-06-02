@@ -1,4 +1,4 @@
 package io.miscellanea.madison.schema;
 
-public record DatabaseConfig(String dbHost, int dbPort, String dbUser, String dbPassword, String dbName) {
+public record DatabaseConfig(String dbDir, String dbName, String dbUser, String dbPassword ) {
 }

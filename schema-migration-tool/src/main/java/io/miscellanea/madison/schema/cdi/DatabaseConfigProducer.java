@@ -2,11 +2,11 @@ package io.miscellanea.madison.schema.cdi;
 
 import io.miscellanea.madison.config.ConfigException;
 import io.miscellanea.madison.config.ConfigProducer;
+import io.miscellanea.madison.schema.DatabaseConfig;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
 import org.apache.commons.configuration2.CompositeConfiguration;
-import io.miscellanea.madison.schema.DatabaseConfig;
 
 @ApplicationScoped
 public class DatabaseConfigProducer extends ConfigProducer<DatabaseConfig> {
@@ -20,9 +20,8 @@ public class DatabaseConfigProducer extends ConfigProducer<DatabaseConfig> {
     // ConfigProducer
     @Override
     protected DatabaseConfig buildCustomConfig(CompositeConfiguration configuration) {
-        return new DatabaseConfig(configuration.getString("db.host"), configuration.getInt("db.port"),
-                configuration.getString("db.user"), configuration.getString("db.password"),
-                configuration.getString("db.name"));
+        return new DatabaseConfig(configuration.getString("db.dir"), configuration.getString("db.name"),
+                configuration.getString("db.user"), configuration.getString("db.password"));
     }
 
     // Producer methods

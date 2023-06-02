@@ -11,9 +11,9 @@ public class Identifiers {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(name = "isbn_10", length = 10, columnDefinition = "BPCHAR(10)")
+    @Column(name = "isbn_10", length = 10, columnDefinition = "CHAR")
     private String isbn10;
-    @Column(name = "isbn_13", length = 13, columnDefinition = "BPCHAR(13)")
+    @Column(name = "isbn_13", length = 13, columnDefinition = "CHAR")
     private String isbn13;
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "document_id")

@@ -12,8 +12,8 @@ CREATE TABLE IF NOT EXISTS identifiers
 (
     id      BIGSERIAL PRIMARY KEY,
     document_id  BIGINT NOT NULL REFERENCES document (id),
-    isbn_10 CHAR(10),
-    isbn_13 CHAR(13)
+    isbn_10 VARCHAR(10),
+    isbn_13 VARCHAR(13)
 );
 
 CREATE INDEX IF NOT EXISTS identifiers_fk_doc_id ON identifiers (document_id);
@@ -26,12 +26,7 @@ CREATE TABLE author
     last_name   VARCHAR(50) NOT NULL,
     suffix      VARCHAR(10),
     code        VARCHAR(50) NOT NULL,
-    full_name   VARCHAR(200) GENERATED ALWAYS AS ( first_name || ' ' ||
-                                                   CASE WHEN middle_name IS NOT NULL THEN ' ' ELSE '' END ||
-                                                   last_name ||
-                                                   CASE
-                                                       WHEN suffix IS NOT NULL THEN ', ' || suffix
-                                                       ELSE '' END) STORED
+    full_name   VARCHAR(200)
 );
 
 CREATE TABLE author_document

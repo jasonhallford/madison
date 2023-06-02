@@ -26,10 +26,6 @@
         <!-- Dependency versions -->
         <weld.version>5.1.0.Final</weld.version>
         <h2.version>2.1.214</h2.version>
-        <rabbitmq.version>5.16.0</rabbitmq.version>
-        <jooq.version>3.17.6</jooq.version>
-        <vertx.version>4.3.7</vertx.version>
-        <minio.version>8.4.6</minio.version>
         <flyway.version>9.10.2</flyway.version>
         <apache-commons.configuration.version>2.8.0</apache-commons.configuration.version>
         <apache-commons.codec.version>1.15</apache-commons.codec.version>
@@ -39,12 +35,12 @@
         <assertj.version>3.23.1</assertj.version>
         <jackson.version>2.14.0</jackson.version>
         <resteasy-client.version>6.2.2.Final</resteasy-client.version>
-        <hikaricp.version>5.0.1</hikaricp.version>
         <jetbrains.annotations.version>23.1.0</jetbrains.annotations.version>
         <jedis.version>4.3.1</jedis.version>
         <pdfbox.version>2.0.27</pdfbox.version>
         <quarkus.version>3.0.0.Final</quarkus.version>
         <quarkus.vertx-web.version>3.0.0.Beta1</quarkus.vertx-web.version>
+        <jeroMQ.version>0.5.3</jeroMQ.version>
     </properties>
 
     <dependencyManagement>
@@ -56,43 +52,24 @@
                 <version>${weld.version}</version>
             </dependency>
 
-            <!-- Redis -->
+            <!-- Messaging -->
+            <dependency>
+                <groupId>org.zeromq</groupId>
+                <artifactId>jeromq</artifactId>
+                <version>${jeroMQ.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>redis.clients</groupId>
                 <artifactId>jedis</artifactId>
                 <version>${jedis.version}</version>
             </dependency>
 
-            <!-- Jooq and DB -->
-            <dependency>
-                <groupId>org.jooq</groupId>
-                <artifactId>jooq</artifactId>
-                <version>${jooq.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jooq</groupId>
-                <artifactId>jooq-meta</artifactId>
-                <version>${jooq.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jooq</groupId>
-                <artifactId>jooq-codegen</artifactId>
-                <version>${jooq.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.zaxxer</groupId>
-                <artifactId>HikariCP</artifactId>
-                <version>${hikaricp.version}</version>
-            </dependency>
+            <!-- DB Dependencies -->
             <dependency>
                 <groupId>com.h2database</groupId>
                 <artifactId>h2</artifactId>
                 <version>${h2.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.postgresql</groupId>
-                <artifactId>postgresql</artifactId>
-                <version>${postgresql.driver.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.flywaydb</groupId>
@@ -107,28 +84,6 @@
                 <version>${quarkus.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
-            </dependency>
-
-            <!-- Vert.x -->
-            <dependency>
-                <groupId>io.vertx</groupId>
-                <artifactId>vertx-core</artifactId>
-                <version>${vertx.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.vertx</groupId>
-                <artifactId>vertx-web</artifactId>
-                <version>${vertx.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.vertx</groupId>
-                <artifactId>vertx-web-client</artifactId>
-                <version>${vertx.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.vertx</groupId>
-                <artifactId>vertx-pg-client</artifactId>
-                <version>${vertx.version}</version>
             </dependency>
 
             <!-- REST -->
